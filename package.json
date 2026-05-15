@@ -1,7 +1,7 @@
 {
   "name": "developer-stack-skills",
-  "version": "1.0.1",
-  "description": "AI agent SKILL.md files for Java/Spring, Python/FastAPI, React/Angular, Testing, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
+  "version": "1.1.0",
+  "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
   "keywords": [
     "ai-agents",
     "skills",
@@ -26,14 +26,23 @@
     "url": "https://github.com/jabhijeet/developer-stack-skills.git"
   },
   "license": "MIT",
+  "bin": {
+    "developer-stack-skills": "bin/developer-stack-skills.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
+    "bin/**/*",
+    "lib/**/*",
     "java-spring/SKILL.md",
     "python-backend/SKILL.md",
     "frontend/SKILL.md",
     "testing/SKILL.md",
     "project-conventions/SKILL.md",
     "examples/**/*",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "skills": {
     "java-spring": "java-spring/SKILL.md",
