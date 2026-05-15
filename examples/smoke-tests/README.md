@@ -4,7 +4,7 @@ Use these fixtures to verify agents can load `SKILL.md` files consistently from 
 
 ## Goal
 
-Each fixture points an agent at the published package paths under `node_modules/io.github.jabhijeet/`.
+Each fixture points an agent at the published package paths under `node_modules/developer-stack-skills/`.
 The smoke test passes when the agent:
 
 1. Acknowledges the loaded skill files
@@ -15,7 +15,7 @@ The smoke test passes when the agent:
 
 1. Install package in a clean repo:
    ```bash
-   npm install io.github.jabhijeet
+   npm install developer-stack-skills
    ```
 2. Copy one fixture config into the test repo
 3. Open the prompt file for that fixture

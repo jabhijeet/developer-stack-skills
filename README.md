@@ -1,4 +1,4 @@
-# io.github.jabhijeet
+# developer-stack-skills
 
 > AI agent SKILL.md files for full-stack developers — Java, Python, React, Angular, Testing, and Project Conventions.
 
@@ -9,7 +9,7 @@ Compatible with **Claude**, **Cline**, **Roocode**, **GitHub Copilot**, and **Cu
 ## Install
 
 ```bash
-npm install io.github.jabhijeet
+npm install developer-stack-skills
 ```
 
 ---
@@ -31,32 +31,32 @@ npm install io.github.jabhijeet
 ### Claude / Cursor
 Point to the skill file in your system prompt or agent config:
 ```
-Read node_modules/io.github.jabhijeet/java-spring/SKILL.md before writing any Java code.
+Read node_modules/developer-stack-skills/java-spring/SKILL.md before writing any Java code.
 ```
 
 ### Cline (VS Code)
 Add to `.clinerules` in your project root:
 ```
 skills:
-  - node_modules/io.github.jabhijeet/java-spring/SKILL.md
-  - node_modules/io.github.jabhijeet/testing/SKILL.md
-  - node_modules/io.github.jabhijeet/project-conventions/SKILL.md
+  - node_modules/developer-stack-skills/java-spring/SKILL.md
+  - node_modules/developer-stack-skills/testing/SKILL.md
+  - node_modules/developer-stack-skills/project-conventions/SKILL.md
 ```
 
 ### Roocode
 Add to `.roo/config.yml`:
 ```yaml
 skills:
-  - path: node_modules/io.github.jabhijeet/python-backend/SKILL.md
-  - path: node_modules/io.github.jabhijeet/frontend/SKILL.md
+  - path: node_modules/developer-stack-skills/python-backend/SKILL.md
+  - path: node_modules/developer-stack-skills/frontend/SKILL.md
 ```
 
 ### GitHub Copilot
 Reference in `.github/copilot-instructions.md`:
 ```markdown
 Follow the conventions in:
-- node_modules/io.github.jabhijeet/frontend/SKILL.md
-- node_modules/io.github.jabhijeet/project-conventions/SKILL.md
+- node_modules/developer-stack-skills/frontend/SKILL.md
+- node_modules/developer-stack-skills/project-conventions/SKILL.md
 ```
 
 ---
