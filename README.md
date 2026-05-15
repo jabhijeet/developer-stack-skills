@@ -18,12 +18,40 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `1.1.0`
+Version in this README: `1.2.0`
 
-Run installer:
+Interactive `npm install` now auto-runs configuration.
+
+- `npm install developer-stack-skills`
+  Installs skills into `<project>/.ai-skills/developer-stack-skills`
+  Default mode prompt prefers `copy`
+- `npm install -g developer-stack-skills`
+  Installs skills into `~/.ai-skills/developer-stack-skills`
+  Default mode prompt prefers `symlink`
+  Still asks which project directory to update for agent config files
+
+Manual installer still available:
 
 ```bash
 developer-stack-skills install
+```
+
+Remove installed skills and agent config:
+
+```bash
+developer-stack-skills uninstall
+```
+
+Show version:
+
+```bash
+developer-stack-skills version
+```
+
+Show help:
+
+```bash
+developer-stack-skills help
 ```
 
 Or run from local package without global install:
@@ -37,34 +65,43 @@ Installer will:
 1. Detect OS automatically
 2. Ask which agent to configure: `all`, `claude`, `cursor`, `cline`, `roocode`, or `copilot`
 3. Ask whether to `copy` files or create `symlink`
-4. Ask which project directory to install into
-5. Install all skill folders into:
+4. Ask which project directory to install into when needed
+5. Install all skill folders into project or global skill directory
+6. Update agent-specific config files in that project
+7. Log package version, package install type (`source`, `local`, or `global`), install scope, OS, source directory, install directory, and each generated config path
+
+Project-level install dir:
 
 ```text
 <project>/.ai-skills/developer-stack-skills/
 ```
 
-6. Update agent-specific config files in that project
-7. Log package version, package install type (`local` or `global`), OS, source directory, install directory, and each generated config path
+Global install dir:
 
-Installer does not run automatically on `npm install`. Run `developer-stack-skills install` or `npx developer-stack-skills install` when you want to configure a project.
+```text
+~/.ai-skills/developer-stack-skills/
+```
+
+`postinstall` skips auto-config in non-interactive environments and in source checkout of this repo. In those cases, run `developer-stack-skills install` or `npx developer-stack-skills install` manually.
 
 Non-interactive install:
 
 ```bash
 developer-stack-skills install --agent all --mode symlink --dir . --yes
+developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 ```
 
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 1.1.0
+[developer-stack-skills] installing version 1.2.0
 [developer-stack-skills] package install type: global
+[developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows
 [developer-stack-skills] package dir: C:\Users\<you>\AppData\Roaming\npm\node_modules\developer-stack-skills
 [developer-stack-skills] project dir: D:\Projects\my-app
-[developer-stack-skills] install dir: D:\Projects\my-app\.ai-skills\developer-stack-skills
-[developer-stack-skills] skill installed: java-spring -> D:\Projects\my-app\.ai-skills\developer-stack-skills\java-spring
+[developer-stack-skills] install dir: C:\Users\<you>\.ai-skills\developer-stack-skills
+[developer-stack-skills] skill installed: java-spring -> C:\Users\<you>\.ai-skills\developer-stack-skills\java-spring
 [developer-stack-skills] cline config updated: D:\Projects\my-app\.clinerules
 [developer-stack-skills] install complete
 ```
@@ -74,7 +111,15 @@ Flags:
 - `--agent <all|claude|cursor|cline|roocode|copilot>`
 - `--mode <copy|symlink>`
 - `--dir <project-directory>`
+- `--dry-run`
 - `--yes`
+
+Commands:
+
+- `install`
+- `uninstall`
+- `version`
+- `help`
 
 ---
 
@@ -84,6 +129,12 @@ Skill files get copied or linked here:
 
 ```text
 <project>/.ai-skills/developer-stack-skills/
+```
+
+Or for global package installs:
+
+```text
+~/.ai-skills/developer-stack-skills/
 ```
 
 Agent configs get created or updated here:
