@@ -33,6 +33,18 @@ test("parseArgs reads install flags", () => {
   assert.equal(result.yes, true);
 });
 
+test("parseArgs defaults to interactive install when no command provided", () => {
+  const result = parseArgs([]);
+
+  assert.equal(result.command, "install");
+});
+
+test("parseArgs preserves configure command", () => {
+  const result = parseArgs(["configure"]);
+
+  assert.equal(result.command, "configure");
+});
+
 test("replaceManagedBlock appends html managed block", () => {
   const result = replaceManagedBlock("Header", "Body", "html");
 

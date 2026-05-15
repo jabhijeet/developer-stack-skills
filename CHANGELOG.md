@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.1 - 2026-05-15
+
+Added:
+
+- `configure` command alias for interactive post-install setup
+- test coverage for `configure` command parsing
+
+Changed:
+
+- bare `developer-stack-skills` now defaults to interactive install/configuration instead of help output
+- skipped `postinstall` message now tells users to run `developer-stack-skills configure`
+- README now documents explicit post-install configuration flow, `--foreground-scripts` requirement for visible npm lifecycle prompts, and updated command examples
+
+Notes:
+
+- recommended setup flow is now `npm install ...` followed by `developer-stack-skills configure`
+
 ## 1.2.0 - 2026-05-15
 
 Added:

@@ -18,9 +18,9 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `1.2.0`
+Version in this README: `1.2.1`
 
-Interactive `npm install` now auto-runs configuration.
+Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
 - `npm install developer-stack-skills`
   Installs skills into `<project>/.ai-skills/developer-stack-skills`
@@ -28,12 +28,26 @@ Interactive `npm install` now auto-runs configuration.
 - `npm install -g developer-stack-skills`
   Installs skills into `~/.ai-skills/developer-stack-skills`
   Default mode prompt prefers `symlink`
-  Still asks which project directory to update for agent config files
+  Post-install configure step: `developer-stack-skills configure`
 
-Manual installer still available:
+Post-install configure command:
 
 ```bash
+developer-stack-skills configure
+```
+
+Shortcut:
+
+```bash
+developer-stack-skills
 developer-stack-skills install
+```
+
+To force npm to show install-time prompts/logs:
+
+```bash
+npm install developer-stack-skills --foreground-scripts
+npm install -g developer-stack-skills --foreground-scripts
 ```
 
 Remove installed skills and agent config:
@@ -57,7 +71,7 @@ developer-stack-skills help
 Or run from local package without global install:
 
 ```bash
-npx developer-stack-skills install
+npx developer-stack-skills configure
 ```
 
 Installer will:
@@ -82,7 +96,7 @@ Global install dir:
 ~/.ai-skills/developer-stack-skills/
 ```
 
-`postinstall` skips auto-config in non-interactive environments and in source checkout of this repo. In those cases, run `developer-stack-skills install` or `npx developer-stack-skills install` manually.
+`postinstall` skips auto-config in non-interactive environments and in source checkout of this repo. npm also hides lifecycle script output by default unless `--foreground-scripts` is set. In those cases, run `developer-stack-skills configure` after installation.
 
 Non-interactive install:
 
@@ -94,7 +108,7 @@ developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 1.2.0
+[developer-stack-skills] installing version 1.2.1
 [developer-stack-skills] package install type: global
 [developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows
@@ -116,6 +130,7 @@ Flags:
 
 Commands:
 
+- `configure`
 - `install`
 - `uninstall`
 - `version`

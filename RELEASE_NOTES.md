@@ -1,5 +1,29 @@
 # Release Notes
 
+## 1.2.1 - 2026-05-15
+
+This release clarifies installation behavior and makes post-install setup explicit with a dedicated `configure` command.
+
+Highlights:
+
+- added `developer-stack-skills configure` as explicit post-install setup command
+- bare `developer-stack-skills` now starts interactive configuration as shortcut
+- documentation now explains that npm may hide `postinstall` prompts/logs unless `--foreground-scripts` is used
+- global install flow now clearly tells users to run `developer-stack-skills configure` after installation
+
+Recommended flow:
+
+```bash
+npm install -g developer-stack-skills
+developer-stack-skills configure
+```
+
+If install-time prompts are required:
+
+```bash
+npm install -g developer-stack-skills --foreground-scripts
+```
+
 ## 1.2.0 - 2026-05-15
 
 This release streamlines package setup so installing package can immediately configure skills without extra manual steps in interactive environments.

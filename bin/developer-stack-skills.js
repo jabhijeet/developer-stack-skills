@@ -11,7 +11,7 @@ const {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
-  if (args.command === "install") {
+  if (["install", "configure"].includes(args.command)) {
     await runInstall(args);
     return;
   }
