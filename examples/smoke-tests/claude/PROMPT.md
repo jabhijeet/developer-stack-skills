@@ -1,0 +1,1 @@
+Refactor a React component that fetches data directly inside JSX render flow. Move data access into a hook or service, preserve TypeScript strictness, and add tests for loading, success, and error states.
