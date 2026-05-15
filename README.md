@@ -30,6 +30,15 @@ Interactive `npm install` can auto-run post-install configuration, but recent np
   Default mode prompt prefers `symlink`
   Post-install configure step: `developer-stack-skills configure`
 
+Why global install still asks for project directory:
+
+- Global install has two separate outputs:
+  1. Skill files go into shared user-level folder: `~/.ai-skills/developer-stack-skills`
+  2. Agent config files still get written into one specific project
+- Installer asks for `Project directory` so it knows where to update `CLAUDE.md`, `.clinerules`, `.roo/config.yml`, `.cursor/rules/developer-stack-skills.mdc`, and `.github/copilot-instructions.md`
+- Global package install does not mean "enable skills for every repo automatically"
+- It means "store one shared copy of skills globally, then link chosen project to those skills"
+
 Post-install configure command:
 
 ```bash
@@ -165,6 +174,56 @@ Notes:
 - `copy` makes project-local copies of skill folders
 - `symlink` keeps installed skills linked to package source
 - Running installer again refreshes installed skill folders and rewrites managed config sections
+
+---
+
+## FAQ
+
+### Why does `npm install -g developer-stack-skills` still ask for `Project directory`?
+
+Because installer does two different things:
+
+1. It installs skill folders
+2. It updates agent config files for a specific project
+
+With global package install, skill folders go to:
+
+```text
+~/.ai-skills/developer-stack-skills/
+```
+
+But agent configs still must be written into a real project, for example:
+
+```text
+D:\Projects\my-app\CLAUDE.md
+D:\Projects\my-app\.clinerules
+D:\Projects\my-app\.roo\config.yml
+```
+
+So `Project directory` prompt is still required. Global install means shared skill storage, not machine-wide auto-enable for every repository.
+
+### What is difference between `npm install -g developer-stack-skills` and `npm install developer-stack-skills`?
+
+`npm install -g developer-stack-skills`
+
+- Package installs into global npm directory
+- CLI command `developer-stack-skills` works anywhere
+- Skills install into `~/.ai-skills/developer-stack-skills/`
+- Default install mode is `symlink`
+- Best when you want one shared install reused across many projects
+
+`npm install developer-stack-skills`
+
+- Package installs into current project's `node_modules`
+- CLI usually runs through `npx developer-stack-skills` or npm scripts
+- Skills install into `<project>/.ai-skills/developer-stack-skills/`
+- Default install mode is `copy`
+- Best when each project should keep its own isolated skill copy
+
+Same in both cases:
+
+- Installer still updates agent config files per project
+- Skills are not auto-enabled for every repository on machine
 
 ---
 

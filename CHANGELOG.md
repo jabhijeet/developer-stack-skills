@@ -12,6 +12,7 @@ Changed:
 - bare `developer-stack-skills` now defaults to interactive install/configuration instead of help output
 - skipped `postinstall` message now tells users to run `developer-stack-skills configure`
 - README now documents explicit post-install configuration flow, `--foreground-scripts` requirement for visible npm lifecycle prompts, and updated command examples
+- README now clarifies why global install still asks for project directory and how global vs local install differ
 
 Notes:
 
