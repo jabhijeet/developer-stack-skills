@@ -1,5 +1,86 @@
 # Release Notes
 
+## 2.0.0 - 2026-05-16
+
+This release adds MCP server support, Claude Code slash commands, and hooks — making skills available to AI agents at runtime without manual SKILL.md loading.
+
+### MCP Server
+
+Skills are now exposed as MCP tools. Start the server with:
+
+```bash
+developer-stack-skills serve
+```
+
+Add to your MCP client config (stdio transport):
+
+```json
+{
+  "mcpServers": {
+    "developer-stack-skills": {
+      "command": "developer-stack-skills",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+Or with npx (no global install required):
+
+```json
+{
+  "mcpServers": {
+    "developer-stack-skills": {
+      "command": "npx",
+      "args": ["developer-stack-skills", "serve"]
+    }
+  }
+}
+```
+
+Available tools:
+
+| Tool | Description |
+|---|---|
+| `list_available_skills` | List all skills with descriptions and file patterns |
+| `get_skill` | Load full SKILL.md for a stack before writing code |
+| `get_conventions` | Load project-wide conventions |
+| `detect_stack` | Detect which skill applies to a file path |
+
+Typical agent workflow:
+
+1. Agent opens a file → calls `detect_stack` with the file path
+2. Server returns the recommended skill name
+3. Agent calls `get_skill` to load full conventions
+4. Agent writes code following those conventions
+
+### Claude Code Commands
+
+Five slash commands are now included and installed into your project:
+
+- `/implement-feature [description]` — detect stack, plan, implement with tests
+- `/write-tests [target]` — write tests following stack conventions
+- `/review-pr` — review branch changes against conventions
+- `/check-deps` — audit dependencies for outdated versions and vulnerabilities
+- `/add-endpoint [description]` — add REST endpoint following stack and REST conventions
+
+### Hooks
+
+Two Claude Code hooks inject reminders automatically:
+
+- `pre-write.js` — fires before any file write; injects a one-line stack reminder based on file extension (Java, Kotlin, Python, Angular, TypeScript, env files, SQL migrations)
+- `pre-bash.js` — fires before bash commands; warns to verify latest stable version before any package install (`pip install`, `npm install`, `uv add`, etc.)
+
+Hooks require Claude Code. They run automatically — no manual configuration beyond the installer wiring them up.
+
+### Agent Config Updates
+
+- **Claude Code**: `.claude/rules/` now contains per-stack rule files that auto-load the right skill
+- **Cursor**: Single `.cursor/rules/developer-stack-skills.mdc` replaced by five per-stack `.mdc` files for finer-grained activation
+- **Roocode**: Migrated from `.roo/config.yml` to `.roo/rules/developer-stack-skills.md`
+
+---
+
 ## 1.2.1 - 2026-05-15
 
 This release clarifies installation behavior and makes post-install setup explicit with a dedicated `configure` command.

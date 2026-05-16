@@ -1,6 +1,6 @@
 {
   "name": "developer-stack-skills",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
   "keywords": [
     "ai-agents",
@@ -29,13 +29,22 @@
   "bin": {
     "developer-stack-skills": "bin/developer-stack-skills.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "postinstall": "node bin/postinstall.js",
     "test": "node --test"
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0"
+  },
   "files": [
     "bin/**/*",
+    "commands/**/*",
+    "hooks/**/*",
     "lib/**/*",
+    ".claude/rules/**/*",
     "java-spring/SKILL.md",
     "python-backend/SKILL.md",
     "frontend/SKILL.md",

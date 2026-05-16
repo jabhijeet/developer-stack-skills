@@ -18,7 +18,7 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `1.2.1`
+Version in this README: `2.0.0`
 
 Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
@@ -77,10 +77,17 @@ Show help:
 developer-stack-skills help
 ```
 
+Start MCP server (stdio):
+
+```bash
+developer-stack-skills serve
+```
+
 Or run from local package without global install:
 
 ```bash
 npx developer-stack-skills configure
+npx developer-stack-skills serve
 ```
 
 Installer will:
@@ -117,7 +124,7 @@ developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 1.2.1
+[developer-stack-skills] installing version 2.0.0
 [developer-stack-skills] package install type: global
 [developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows
@@ -142,8 +149,83 @@ Commands:
 - `configure`
 - `install`
 - `uninstall`
+- `serve`
 - `version`
 - `help`
+
+---
+
+## MCP Server
+
+Skills are exposed as MCP tools via stdio transport.
+
+```bash
+developer-stack-skills serve
+```
+
+Add to MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "developer-stack-skills": {
+      "command": "developer-stack-skills",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+Or without global install:
+
+```json
+{
+  "mcpServers": {
+    "developer-stack-skills": {
+      "command": "npx",
+      "args": ["developer-stack-skills", "serve"]
+    }
+  }
+}
+```
+
+Available tools:
+
+| Tool | Description |
+|---|---|
+| `list_available_skills` | List all skills with descriptions and file patterns |
+| `get_skill` | Load full SKILL.md for a stack (`java-spring`, `python-backend`, `frontend`, `testing`, `project-conventions`) |
+| `get_conventions` | Load project-wide conventions (shortcut for `get_skill` with `project-conventions`) |
+| `detect_stack` | Given a file path, return which skill applies and a ready-to-use `get_skill` call |
+
+---
+
+## Claude Code Commands
+
+Five slash commands are installed into your project:
+
+| Command | Description |
+|---|---|
+| `/implement-feature [description]` | Detect stack, plan, implement with tests |
+| `/write-tests [target]` | Write tests following stack conventions |
+| `/review-pr` | Review branch changes against conventions |
+| `/check-deps` | Audit dependencies for outdated versions and vulnerabilities |
+| `/add-endpoint [description]` | Add REST endpoint following stack and REST conventions |
+
+---
+
+## Hooks
+
+Two Claude Code hooks fire automatically:
+
+| Hook | File | Fires When |
+|---|---|---|
+| `pre-write` | `hooks/pre-write.js` | Before any file write — injects stack reminder based on file extension |
+| `pre-bash` | `hooks/pre-bash.js` | Before bash commands — warns to verify latest stable version on package installs |
+
+The `pre-write` hook covers: Java, Kotlin, Python, Angular TypeScript, generic TypeScript/JSX, `.env` files, and `.sql` migrations.
+
+The `pre-bash` hook detects: `pip install`, `uv add`, `npm install`, `yarn add`, `pnpm add`, `bun add`, `poetry add`, and `npx pkg@latest`.
 
 ---
 

@@ -1,5 +1,34 @@
 # Changelog
 
+## 2.0.0 - 2026-05-16
+
+Added:
+
+- MCP server (`developer-stack-skills serve`) with four tools: `list_available_skills`, `get_skill`, `get_conventions`, `detect_stack`
+- `serve` command in CLI to start MCP server over stdio
+- Claude Code slash commands (`commands/`): `implement-feature`, `write-tests`, `review-pr`, `check-deps`, `add-endpoint`
+- Claude Code hooks (`hooks/`): `pre-write.js` injects per-stack reminders on file writes; `pre-bash.js` warns on package install commands
+- `.claude/rules/` per-stack rule files for automatic skill loading in Claude Code
+- Cursor rules split into per-stack `.mdc` files: `developer-stack-skills-frontend.mdc`, `developer-stack-skills-java-spring.mdc`, `developer-stack-skills-python-backend.mdc`, `developer-stack-skills-project-conventions.mdc`, `developer-stack-skills-testing.mdc`
+- Roocode migrated from `.roo/config.yml` to `.roo/rules/developer-stack-skills.md`
+- `.gitignore` added to package
+
+Changed:
+
+- `@modelcontextprotocol/sdk` promoted to runtime dependency (was implicit dev dep)
+- `files` in `package.json` now includes `commands/` and `hooks/`
+
+Removed:
+
+- `.roo/config.yml` replaced by `.roo/rules/developer-stack-skills.md`
+- `.cursor/rules/developer-stack-skills.mdc` (single file) replaced by per-stack `.mdc` files
+
+Notes:
+
+- MCP server exposes all five skills as tools — agents can call `detect_stack` with a file path and get back which skill to load
+- Hooks require Claude Code; Cursor and Copilot integration remains config-file based
+- All MCP tools are read-only (`readOnlyHint: true`)
+
 ## 1.2.1 - 2026-05-15
 
 Added:

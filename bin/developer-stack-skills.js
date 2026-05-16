@@ -21,6 +21,12 @@ async function main() {
     return;
   }
 
+  if (args.command === "serve") {
+    const { runMcpServer } = require("../lib/mcp-server");
+    await runMcpServer();
+    return;
+  }
+
   if (["version", "--version", "-v"].includes(args.command)) {
     printVersion();
     return;
