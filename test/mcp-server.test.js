@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const path = require("path");
 const fsp = require("fs/promises");
 
-const { detectStack, SKILL_META, SKILL_NAMES } = require("../lib/mcp-server");
+const { detectStack, handleTool, SKILL_META, SKILL_NAMES } = require("../lib/mcp-server");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 
@@ -137,6 +137,52 @@ test("detectStack: test file detected before source type", () => {
   assert.equal(detectStack("test_user.py"), "testing");
   // UserCard.test.tsx should be 'testing', not 'frontend'
   assert.equal(detectStack("UserCard.test.tsx"), "testing");
+});
+
+// ── handleTool error shape ───────────────────────────────────
+
+function parseError(result) {
+  assert.ok(result.isError, "result.isError should be true");
+  const payload = JSON.parse(result.content[0].text);
+  assert.ok(typeof payload.error_type === "string", "error_type is string");
+  assert.ok(typeof payload.message === "string", "message is string");
+  assert.ok(typeof payload.retryable === "boolean", "retryable is boolean");
+  return payload;
+}
+
+test("handleTool get_skill: unknown stack returns INVALID_SKILL error", async () => {
+  const result = await handleTool("get_skill", { stack_name: "cobol" });
+  const err = parseError(result);
+  assert.equal(err.error_type, "INVALID_SKILL");
+  assert.equal(err.retryable, false);
+  assert.ok(err.message.includes("cobol"));
+});
+
+test("handleTool unknown tool returns UNKNOWN_TOOL error", async () => {
+  const result = await handleTool("no_such_tool", {});
+  const err = parseError(result);
+  assert.equal(err.error_type, "UNKNOWN_TOOL");
+  assert.equal(err.retryable, false);
+});
+
+test("handleTool get_skill: valid stack returns content, not error", async () => {
+  const result = await handleTool("get_skill", { stack_name: "java-spring" });
+  assert.ok(!result.isError, "should not be error");
+  assert.ok(result.content[0].text.length > 100, "has skill content");
+});
+
+test("handleTool detect_stack: returns recommended_skill and next_step", async () => {
+  const result = await handleTool("detect_stack", { file_path: "src/UserService.java" });
+  assert.ok(!result.isError);
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(payload.recommended_skill, "java-spring");
+  assert.ok(payload.next_step.includes("get_skill"));
+});
+
+test("handleTool get_conventions: returns content, not error", async () => {
+  const result = await handleTool("get_conventions", {});
+  assert.ok(!result.isError);
+  assert.ok(result.content[0].text.length > 100);
 });
 
 // ── readSkillFile (indirect via module) ──────────────────────

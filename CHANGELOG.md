@@ -1,5 +1,49 @@
 # Changelog
 
+## 3.0.0 - 2026-05-20
+
+Breaking:
+
+- Node.js engine requirement raised to `>=24.0.0` — drops Node 18, 20, 22
+- MCP tool error responses changed from plain text to structured JSON `{error_type, message, retryable}` — `INVALID_SKILL`, `SKILL_NOT_FOUND`, `UNKNOWN_TOOL`
+- `configureCline(dir, paths, dryRun)` → `configureCline(dir, paths, useMcp, dryRun)` — third param changed
+- `configureRoocode(dir, paths, dryRun)` → `configureRoocode(dir, paths, useMcp, dryRun)` — third param changed
+- `configureClaude` now generates MCP-first CLAUDE.md when `configureMcpServer=true` — installed projects get `detect_stack`/`get_skill` instructions instead of file paths
+
+Added:
+
+- `configureCursorMcp(dir, packageInstallType, dryRun)` — writes `.cursor/mcp.json`
+- `configureSharedMcp(dir, packageInstallType, dryRun)` — writes `.mcp.json` at project root for Cline/Roocode
+- `writeMcpJsonFile(filePath, packageInstallType, dryRun)` — shared MCP JSON write/merge helper
+- `removeMcpJsonEntry(filePath, dryRun)` — removes package entry, preserves others, deletes file if empty
+- `unconfigureCursorMcp(dir, dryRun)`, `unconfigureSharedMcp(dir, dryRun)` — cleanup counterparts
+- `handleTool` exported from `lib/mcp-server.js` for direct testing
+- Cursor now receives `.cursor/mcp.json` on install when MCP opted in
+- Cline now receives `.mcp.json` + MCP-first `.clinerules` on install when MCP opted in
+- Roocode now receives `.mcp.json` + MCP-first `.roo/rules/developer-stack-skills.md` on install when MCP opted in
+- Source repo `.claude/mcp.json` and `.mcp.json` added for Cline/Roocode users of this repo
+- 33 new tests: MCP routing in `configureAgents`, structured error shape, `writeMcpJsonFile`/`removeMcpJsonEntry` helpers, idempotency for all MCP config functions, unconfigure cleanup
+- Smoke test fixtures (claude, cline, roocode) updated to MCP-first instructions; cline/roocode fixtures include `.mcp.json`
+
+Changed:
+
+- `configureCline` — generates MCP-first body when `useMcp=true`; path-based body when false
+- `configureRoocode` — same
+- `configureAgents` — passes `configureMcpServer` to all agent configurers; calls `configureCursorMcp`/`configureSharedMcp` when opted in; calls `unconfigureCursorMcp`/`unconfigureSharedMcp` on uninstall
+- `configureMcp`/`unconfigureMcp` refactored to delegate to `writeMcpJsonFile`/`removeMcpJsonEntry`
+- Commands `implement-feature`, `write-tests`, `add-endpoint` — replaced manual root-file stack detection with `detect_stack` + `get_skill` MCP tool calls; `allowed-tools` updated to include MCP tool names
+- `MCP_INSTRUCTION_LINES` constant extracted in `lib/installer.js` — shared between Cline and Roocode instruction generation
+- Java examples: `@MockBean` → `@MockitoBean` (removed Spring Boot 4)
+- Angular testing: Jasmine+Karma → Jest; `HttpClientTestingModule` → `provideHttpClient()` + `provideHttpClientTesting()`
+- All SKILL.md `last-reviewed` dates updated to `2026-05-20`
+
+Version updates:
+
+- Java 17+ → Java 25; Spring Boot 3.x → Spring Boot 4 / Spring Framework 7
+- PostgreSQL container image: `postgres:16-alpine` → `postgres:18-alpine`
+- Python `>=3.12` → `>=3.14`; ruff `>=0.4` → `>=1.0`; mypy `>=1.10` → `>=1.15`; pytest `>=8.0` → `>=8.3`; pytest-asyncio `>=0.23` → `>=0.24`; httpx `>=0.27` → `>=0.28`; uvicorn `>=0.30` → `>=0.34`; asyncpg `>=0.29` → `>=0.30`
+- React 18+ → React 19+; Angular 17+ → Angular 21+; Node engine `>=18` → `>=24`
+
 ## 2.0.0 - 2026-05-16
 
 Added:

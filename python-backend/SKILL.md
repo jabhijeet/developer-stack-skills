@@ -8,7 +8,7 @@ description: >
   data pipelines, or CLI tools.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
 version: 1.0.0
-last-reviewed: 2026-05-15
+last-reviewed: 2026-05-20
 applies-to: Python, FastAPI, Django, SQLAlchemy, background workers, CLI tools, testing
 ---
 
@@ -362,22 +362,22 @@ async def test_create_user(client: AsyncClient):
 [project]
 name = "my-project"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.115",
-    "uvicorn[standard]>=0.30",
+    "uvicorn[standard]>=0.34",
     "sqlalchemy>=2.0",
     "pydantic-settings>=2.0",
-    "asyncpg>=0.29",
+    "asyncpg>=0.30",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "httpx>=0.27",
-    "ruff>=0.4",
-    "mypy>=1.10",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "ruff>=1.0",
+    "mypy>=1.15",
 ]
 ```
 

@@ -18,7 +18,7 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `2.0.0`
+Version in this README: `3.0.0`
 
 Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
@@ -124,7 +124,7 @@ developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 2.0.0
+[developer-stack-skills] installing version 3.0.0
 [developer-stack-skills] package install type: global
 [developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows
@@ -323,9 +323,9 @@ Same in both cases:
 
 ## Stack
 
-- **Java**: Java 17+, Spring Boot 3.x, JPA/Hibernate, JUnit 5, Mockito
-- **Python**: Python 3.12+, FastAPI, Pydantic v2, SQLAlchemy 2.x, pytest
-- **Frontend**: React 18+, Angular 17+, TypeScript 5+, TanStack Query, Vitest
+- **Java**: Java 25, Spring Boot 4 / Spring Framework 7, JPA/Hibernate, JUnit 5, Mockito
+- **Python**: Python 3.14+, FastAPI, Pydantic v2, SQLAlchemy 2.x, pytest
+- **Frontend**: React 19+, Angular 21+, TypeScript 5+, TanStack Query, Vitest
 - **Testing**: JUnit 5, pytest, Vitest, Testing Library, Playwright, Testcontainers
 - **Conventions**: Conventional Commits, ADRs, Git Flow or Trunk-Based Development
 

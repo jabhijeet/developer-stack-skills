@@ -13,13 +13,20 @@ const {
   buildRuleFileContent,
   buildSkillPaths,
   configureClaude,
+  configureAgents,
   configureCline,
   configureClaudeHooks,
   configureClaudeRules,
   configureCursor,
+  configureCursorMcp,
   configureMcp,
   configureRoocode,
+  configureSharedMcp,
+  removeMcpJsonEntry,
   replaceManagedBlock,
+  unconfigureCursorMcp,
+  unconfigureSharedMcp,
+  writeMcpJsonFile,
 } = require("../lib/installer");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
@@ -261,6 +268,265 @@ test("buildMcpCommand local uses npx", () => {
   assert.ok(result.args.includes("serve"));
 });
 
+// ── configureCursorMcp ───────────────────────────────────────
+
+test("configureCursorMcp writes to .cursor/mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureCursorMcp(tmpDir, "global");
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".cursor", "mcp.json"), "utf8"));
+    assert.ok(result.mcpServers["developer-stack-skills"], "our server entry present");
+    assert.equal(result.mcpServers["developer-stack-skills"].command, "developer-stack-skills");
+    assert.equal(result.mcpServers["developer-stack-skills"].type, "stdio");
+  });
+});
+
+test("configureCursorMcp uses npx for local install", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureCursorMcp(tmpDir, "local");
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".cursor", "mcp.json"), "utf8"));
+    assert.equal(result.mcpServers["developer-stack-skills"].command, "npx");
+  });
+});
+
+// ── configureSharedMcp ───────────────────────────────────────
+
+test("configureSharedMcp writes to .mcp.json at project root", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureSharedMcp(tmpDir, "local");
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".mcp.json"), "utf8"));
+    assert.ok(result.mcpServers["developer-stack-skills"], "our server entry present");
+    assert.equal(result.mcpServers["developer-stack-skills"].command, "npx");
+    assert.equal(result.mcpServers["developer-stack-skills"].type, "stdio");
+  });
+});
+
+test("configureSharedMcp preserves other mcpServers entries", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, ".mcp.json");
+    await fsp.writeFile(mcpFile, JSON.stringify({ mcpServers: { "other-tool": { command: "other" } } }), "utf8");
+    await configureSharedMcp(tmpDir, "local");
+    const result = JSON.parse(await fsp.readFile(mcpFile, "utf8"));
+    assert.ok(result.mcpServers["other-tool"], "other server preserved");
+    assert.ok(result.mcpServers["developer-stack-skills"], "our server added");
+  });
+});
+
+// ── writeMcpJsonFile / removeMcpJsonEntry ────────────────────
+
+test("writeMcpJsonFile skips and warns on invalid JSON", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, ".mcp.json");
+    await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
+    await fsp.writeFile(mcpFile, "{ bad json }", "utf8");
+    await writeMcpJsonFile(mcpFile, "local");
+    const raw = await fsp.readFile(mcpFile, "utf8");
+    assert.equal(raw, "{ bad json }", "invalid JSON file left untouched");
+  });
+});
+
+test("removeMcpJsonEntry removes our entry, preserves others", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, ".mcp.json");
+    await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
+    const initial = { mcpServers: { "developer-stack-skills": { command: "npx" }, "other": { command: "other" } } };
+    await fsp.writeFile(mcpFile, JSON.stringify(initial), "utf8");
+    await removeMcpJsonEntry(mcpFile);
+    const result = JSON.parse(await fsp.readFile(mcpFile, "utf8"));
+    assert.ok(!result.mcpServers["developer-stack-skills"], "our entry removed");
+    assert.ok(result.mcpServers["other"], "other entry preserved");
+  });
+});
+
+test("removeMcpJsonEntry deletes file when no entries remain", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, ".mcp.json");
+    await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
+    await fsp.writeFile(mcpFile, JSON.stringify({ mcpServers: { "developer-stack-skills": { command: "npx" } } }), "utf8");
+    await removeMcpJsonEntry(mcpFile);
+    await assert.rejects(fsp.stat(mcpFile), { code: "ENOENT" }, "file deleted when empty");
+  });
+});
+
+test("removeMcpJsonEntry is no-op when file does not exist", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, "nonexistent.json");
+    await assert.doesNotReject(() => removeMcpJsonEntry(mcpFile), "handles missing file gracefully");
+  });
+});
+
+// ── unconfigureCursorMcp / unconfigureSharedMcp ──────────────
+
+test("unconfigureCursorMcp removes our entry from .cursor/mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureCursorMcp(tmpDir, "global");
+    await unconfigureCursorMcp(tmpDir);
+    await assert.rejects(fsp.stat(path.join(tmpDir, ".cursor", "mcp.json")), { code: "ENOENT" }, "file deleted when empty");
+  });
+});
+
+test("unconfigureCursorMcp preserves other entries in .cursor/mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    const mcpFile = path.join(tmpDir, ".cursor", "mcp.json");
+    await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
+    await fsp.writeFile(mcpFile, JSON.stringify({ mcpServers: { "developer-stack-skills": {}, "other": {} } }), "utf8");
+    await unconfigureCursorMcp(tmpDir);
+    const result = JSON.parse(await fsp.readFile(mcpFile, "utf8"));
+    assert.ok(!result.mcpServers["developer-stack-skills"], "our entry removed");
+    assert.ok(result.mcpServers["other"], "other entry preserved");
+  });
+});
+
+test("unconfigureSharedMcp removes our entry from .mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureSharedMcp(tmpDir, "local");
+    await unconfigureSharedMcp(tmpDir);
+    await assert.rejects(fsp.stat(path.join(tmpDir, ".mcp.json")), { code: "ENOENT" }, "file deleted when empty");
+  });
+});
+
+// ── MCP idempotency ──────────────────────────────────────────
+
+test("configureCursorMcp is idempotent — re-run produces same output", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureCursorMcp(tmpDir, "global");
+    await configureCursorMcp(tmpDir, "global");
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".cursor", "mcp.json"), "utf8"));
+    assert.equal(Object.keys(result.mcpServers).length, 1, "exactly one server — not duplicated");
+  });
+});
+
+test("configureSharedMcp is idempotent — re-run produces same output", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureSharedMcp(tmpDir, "local");
+    await configureSharedMcp(tmpDir, "local");
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".mcp.json"), "utf8"));
+    assert.equal(Object.keys(result.mcpServers).length, 1, "exactly one server — not duplicated");
+  });
+});
+
+test("configureCline MCP mode is idempotent — re-run produces same output", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureCline(tmpDir, skillPaths, true);
+    const first = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    await configureCline(tmpDir, skillPaths, true);
+    const second = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    assert.equal(first, second, "idempotent");
+  });
+});
+
+test("configureRoocode MCP mode is idempotent — re-run produces same output", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureRoocode(tmpDir, skillPaths, true);
+    const first = await fsp.readFile(path.join(tmpDir, ".roo", "rules", "developer-stack-skills.md"), "utf8");
+    await configureRoocode(tmpDir, skillPaths, true);
+    const second = await fsp.readFile(path.join(tmpDir, ".roo", "rules", "developer-stack-skills.md"), "utf8");
+    assert.equal(first, second, "idempotent");
+  });
+});
+
+// ── configureAgents MCP routing integration ──────────────────
+
+test("configureAgents cursor+MCP creates .cursor/mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "cursor", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: true, packageInstallType: "local", dryRun: false });
+    const result = JSON.parse(await fsp.readFile(path.join(tmpDir, ".cursor", "mcp.json"), "utf8"));
+    assert.ok(result.mcpServers["developer-stack-skills"], "cursor MCP configured");
+  });
+});
+
+test("configureAgents cline+MCP creates .mcp.json and MCP-first .clinerules", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "cline", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: true, packageInstallType: "local", dryRun: false });
+    const mcpResult = JSON.parse(await fsp.readFile(path.join(tmpDir, ".mcp.json"), "utf8"));
+    assert.ok(mcpResult.mcpServers["developer-stack-skills"], "shared MCP configured");
+    const clineRules = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    assert.match(clineRules, /detect_stack/, ".clinerules uses MCP instructions");
+  });
+});
+
+test("configureAgents roocode+MCP creates .mcp.json and MCP-first rule file", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "roocode", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: true, packageInstallType: "local", dryRun: false });
+    const mcpResult = JSON.parse(await fsp.readFile(path.join(tmpDir, ".mcp.json"), "utf8"));
+    assert.ok(mcpResult.mcpServers["developer-stack-skills"], "shared MCP configured");
+    const rooRule = await fsp.readFile(path.join(tmpDir, ".roo", "rules", "developer-stack-skills.md"), "utf8");
+    assert.match(rooRule, /detect_stack/, "roo rule uses MCP instructions");
+  });
+});
+
+test("configureAgents copilot+MCP does not create .mcp.json", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "copilot", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: true, packageInstallType: "local", dryRun: false });
+    await assert.rejects(fsp.stat(path.join(tmpDir, ".mcp.json")), { code: "ENOENT" }, "no .mcp.json for copilot");
+  });
+});
+
+test("configureAgents without MCP does not create any MCP files", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "cursor", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+    await assert.rejects(fsp.stat(path.join(tmpDir, ".cursor", "mcp.json")), { code: "ENOENT" }, "no cursor MCP when disabled");
+  });
+});
+
+test("configureAgents cline without MCP writes path-based .clinerules", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "cline", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+    const clineRules = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    assert.match(clineRules, /Read and follow these skill files/, "path-based instructions when no MCP");
+    await assert.rejects(fsp.stat(path.join(tmpDir, ".mcp.json")), { code: "ENOENT" }, "no .mcp.json when MCP disabled");
+  });
+});
+
+// ── configureCline MCP mode ──────────────────────────────────
+
+test("configureCline non-MCP mode writes skill file paths", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureCline(tmpDir, skillPaths, false);
+    const result = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    assert.match(result, /Read and follow these skill files/, "path-based instruction");
+    assert.match(result, /SKILL\.md/, "skill path referenced");
+    assert.ok(!result.includes("detect_stack"), "no MCP tool mention");
+  });
+});
+
+test("configureCline MCP mode writes detect_stack instructions", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureCline(tmpDir, skillPaths, true);
+    const result = await fsp.readFile(path.join(tmpDir, ".clinerules"), "utf8");
+    assert.match(result, /detect_stack/, "detect_stack mentioned");
+    assert.match(result, /get_skill/, "get_skill mentioned");
+    assert.match(result, /get_conventions/, "get_conventions mentioned");
+    assert.ok(!result.includes("Read and follow these skill files"), "no path-based instruction");
+  });
+});
+
+// ── configureRoocode MCP mode ────────────────────────────────
+
+test("configureRoocode non-MCP mode writes skill file paths", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureRoocode(tmpDir, skillPaths, false);
+    const result = await fsp.readFile(path.join(tmpDir, ".roo", "rules", "developer-stack-skills.md"), "utf8");
+    assert.match(result, /Load and follow these skill files/, "path-based instruction");
+    assert.ok(!result.includes("detect_stack"), "no MCP tool mention");
+  });
+});
+
+test("configureRoocode MCP mode writes detect_stack instructions", async () => {
+  await withTempDir(async (tmpDir) => {
+    const skillPaths = buildSkillPaths(PACKAGE_ROOT);
+    await configureRoocode(tmpDir, skillPaths, true);
+    const result = await fsp.readFile(path.join(tmpDir, ".roo", "rules", "developer-stack-skills.md"), "utf8");
+    assert.match(result, /detect_stack/, "detect_stack mentioned");
+    assert.match(result, /get_skill/, "get_skill mentioned");
+    assert.ok(!result.includes("Load and follow these skill files"), "no path-based instruction");
+  });
+});
+
 // ── Cross-platform path safety ───────────────────────────────
 
 test("buildSkillPaths uses OS-native separators", () => {
@@ -381,6 +647,45 @@ test("configureClaude preserves user content outside managed block", async () =>
     assert.match(result, /My project/, "heading preserved");
     assert.match(result, /Use TypeScript everywhere/, "custom rule preserved");
     assert.match(result, /developer-stack-skills:start/, "managed block added");
+  });
+});
+
+test("configureClaude non-MCP mode references conventions path", async () => {
+  await withTempDir(async (tmpDir) => {
+    const conventionsPath = path.join(PACKAGE_ROOT, "project-conventions", "SKILL.md");
+    await configureClaude(tmpDir, conventionsPath, null, false);
+
+    const result = await fsp.readFile(path.join(tmpDir, "CLAUDE.md"), "utf8");
+    assert.match(result, /Load this skill file/, "path-based instruction present");
+    assert.match(result, /SKILL\.md/, "conventions path referenced");
+    assert.ok(!result.includes("detect_stack"), "no MCP tool mention in path mode");
+  });
+});
+
+test("configureClaude MCP mode emits detect_stack instructions, no file path", async () => {
+  await withTempDir(async (tmpDir) => {
+    const conventionsPath = path.join(PACKAGE_ROOT, "project-conventions", "SKILL.md");
+    await configureClaude(tmpDir, conventionsPath, null, true);
+
+    const result = await fsp.readFile(path.join(tmpDir, "CLAUDE.md"), "utf8");
+    assert.match(result, /detect_stack/, "detect_stack tool mentioned");
+    assert.match(result, /get_skill/, "get_skill tool mentioned");
+    assert.match(result, /get_conventions/, "get_conventions tool mentioned");
+    assert.match(result, /on demand/, "on-demand wording present");
+    assert.ok(!result.includes("Load this skill file"), "no path-based instruction");
+  });
+});
+
+test("configureClaude MCP mode preserves project context block", async () => {
+  await withTempDir(async (tmpDir) => {
+    const context = { description: "E-commerce API", testCmd: "mvn test" };
+    const conventionsPath = path.join(PACKAGE_ROOT, "project-conventions", "SKILL.md");
+    await configureClaude(tmpDir, conventionsPath, context, true);
+
+    const result = await fsp.readFile(path.join(tmpDir, "CLAUDE.md"), "utf8");
+    assert.match(result, /E-commerce API/, "project description present");
+    assert.match(result, /mvn test/, "test command present");
+    assert.match(result, /detect_stack/, "MCP instruction still present");
   });
 });
 

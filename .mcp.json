@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "developer-stack-skills": {
+      "command": "node",
+      "args": ["bin/developer-stack-skills.js", "serve"],
+      "type": "stdio"
+    }
+  }
+}

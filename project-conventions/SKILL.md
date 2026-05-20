@@ -10,7 +10,7 @@ description: >
   or follow team standards.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
 version: 1.0.0
-last-reviewed: 2026-05-15
+last-reviewed: 2026-05-20
 applies-to: Branching, commits, pull requests, ADRs, naming, environment config, documentation
 ---
 
