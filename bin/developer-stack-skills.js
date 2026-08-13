@@ -10,13 +10,22 @@ const {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  const commands = [
+    "install", "install-skills", "install-agent", "configure",
+    "uninstall", "uninstall-skills", "uninstall-agent", "serve",
+    "version", "--version", "-v", "help", "--help", "-h",
+  ];
 
-  if (["install", "configure"].includes(args.command)) {
+  if (!commands.includes(args.command)) {
+    throw new Error(`Unknown command "${args.command}". Run "developer-stack-skills help" for usage.`);
+  }
+
+  if (["install", "install-skills", "install-agent", "configure"].includes(args.command)) {
     await runInstall(args);
     return;
   }
 
-  if (args.command === "uninstall") {
+  if (["uninstall", "uninstall-skills", "uninstall-agent"].includes(args.command)) {
     await runUninstall(args);
     return;
   }
@@ -37,7 +46,6 @@ async function main() {
     return;
   }
 
-  printHelp();
 }
 
 main().catch((error) => {

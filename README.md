@@ -92,7 +92,7 @@ npx developer-stack-skills serve
 
 Installer will:
 
-1. Detect OS automatically
+1. Detect Windows, macOS, or Linux automatically and reject unsupported operating systems
 2. Ask which agent to configure: `all`, `claude`, `cursor`, `cline`, `roocode`, or `copilot`
 3. Ask whether to `copy` files or create `symlink`
 4. Ask which project directory to install into when needed
@@ -100,17 +100,50 @@ Installer will:
 6. Update agent-specific config files in that project
 7. Log package version, package install type (`source`, `local`, or `global`), install scope, OS, source directory, install directory, and each generated config path
 
-Project-level install dir:
+## Supported platforms and target paths
 
-```text
-<project>/.ai-skills/developer-stack-skills/
+The CLI runs on Windows (`win32`), macOS (`darwin`), and Linux. Unsupported operating systems fail before installation. Agent platforms are separate from the operating system: pass the platform positionally, or use the backward-compatible `--agent` option.
+
+Use `-g` before or after the platform to install all bundled skills in that platform's user-level skills directory. Without `-g`, skills use the existing project store and native project instructions are generated where supported.
+
+| Agent platform | Command | Global install target |
+| :--- | :--- | :--- |
+| AdaL, Aider, AiderDesk | `developer-stack-skills install-skills -g adal` | `~/.adal/skills/` (`~/.aider/skills/`, `~/.aider-desk/skills/`) |
+| Amp, Kimi CLI, Replit, Universal | `developer-stack-skills install-skills -g amp` | `~/.config/agents/skills/` |
+| Antigravity | `developer-stack-skills install-skills -g antigravity` | `~/.gemini/antigravity/skills/` |
+| Claude Code | `developer-stack-skills install-skills -g claude` | `~/.claude/skills/` |
+| Cline / Warp | `developer-stack-skills install-skills -g cline` | `~/.agents/skills/` |
+| Codex | `developer-stack-skills install-skills -g codex` | `~/.codex/skills/` |
+| Cursor | `developer-stack-skills install-skills -g cursor` | `~/.cursor/skills/` |
+| Gemini CLI | `developer-stack-skills install-skills -g gemini` | `~/.gemini/skills/` |
+| GitHub Copilot | `developer-stack-skills install-skills -g copilot` | `~/.copilot/skills/` |
+| Kiro IDE / CLI | `developer-stack-skills install-skills -g kiro` | `~/.kiro/skills/` |
+| OpenCode | `developer-stack-skills install-skills -g opencode` | `~/.config/opencode/skills/` |
+| Pi | `developer-stack-skills install-skills -g pi` | `~/.pi/agent/skills/` |
+| Roo Code | `developer-stack-skills install-skills -g roocode` | `~/.roocode/skills/` |
+| VS Code Copilot | `developer-stack-skills install-skills -g vscode` | `~/.vscode/skills/` |
+| Windsurf | `developer-stack-skills install-skills -g windsurf` | `~/.codeium/windsurf/skills/` |
+| Other supported platforms | `developer-stack-skills install-skills -g <platform>` | `~/.<platform>/skills/` |
+
+Other supported platform identifiers are `augment`, `bob`, `codearts-agent`, `codebuddy`, `codemaker`, `codestudio`, `command-code`, `continue`, `cortex`, `crush`, `deepagents`, `devin`, `droid`, `firebender`, `forgecode`, `generic`, `goose`, `hermes`, `iflow-cli`, `intellij`, `junie`, `kilo`, `kode`, `mcpjam`, `mistral-vibe`, `mux`, `neovate`, `openclaw`, `openhands`, `pochi`, `qoder`, `qwen-code`, `rovodev`, `tabnine-cli`, `trae`, `trae-cn`, and `zencoder`. Aliases: `roo` → `roocode`, `github-copilot` → `copilot`, `gemini-cli` → `gemini`, and `kiro-cli` → `kiro`.
+
+Existing default paths remain compatible:
+
+| Install type | Default target |
+|---|---|
+| Project command | `<project>/.ai-skills/developer-stack-skills/` |
+| Globally installed npm package using legacy `install` | `~/.ai-skills/developer-stack-skills/` |
+| Explicit platform-global command using `-g` | Platform-specific target from the table above |
+
+Override OS detection for testing with `--platform windows`, `--platform macos`, or `--platform linux`. Override the skill and hook target with `--install-root <path>`; relative overrides resolve from the current working directory.
+
+```bash
+developer-stack-skills install --agent claude --platform linux --dir ./app --yes
+developer-stack-skills install --agent all --install-root ./shared-skills --dir ./app --yes
+developer-stack-skills uninstall --agent all --install-root ./shared-skills --dir ./app --yes
 ```
 
-Global install dir:
-
-```text
-~/.ai-skills/developer-stack-skills/
-```
+Use the same `--install-root` for uninstall that was used for install.
 
 `postinstall` skips auto-config in non-interactive environments and in source checkout of this repo. npm also hides lifecycle script output by default unless `--foreground-scripts` is set. In those cases, run `developer-stack-skills configure` after installation.
 
@@ -136,22 +169,53 @@ Example log output:
 [developer-stack-skills] install complete
 ```
 
+### Platform integration details
+
+Every supported platform receives all bundled skills. Platforms with native instruction formats get native artifacts; the rest receive the same mandatory paths through `AGENTS.md`.
+
+| Platform | Action taken | Project files |
+| :--- | :--- | :--- |
+| Claude Code | Installs rules, hooks, optional commands, MCP config, and managed instructions. | `CLAUDE.md`, `.claude/rules/`, `.claude/settings.json`, `.claude/commands/`, `.claude/mcp.json` |
+| Cursor | Writes always-on `.mdc` rules and optional MCP config. | `.cursor/rules/`, `.cursor/mcp.json` |
+| Cline | Writes managed skill or MCP instructions. | `.clinerules`, `.mcp.json` |
+| Roo Code | Writes native rules and optional shared MCP config. | `.roo/rules/developer-stack-skills.md`, `.mcp.json` |
+| GitHub Copilot / VS Code | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
+| Gemini CLI | Writes managed Gemini memory instructions. | `GEMINI.md` |
+| Kiro IDE / CLI | Writes a steering file. | `.kiro/steering/developer-stack-skills.md` |
+| Antigravity | Writes a native agent rule. | `.agent/rules/developer-stack-skills.md` |
+| Codex, OpenCode, IntelliJ, Aider, Trae, and other platforms | Writes portable mandatory instructions. | `AGENTS.md` |
+
+`install-skills` and `install-agent` are reference-compatible aliases for the complete install because this package's skills, hooks, and on-demand MCP guidance form one integration unit. Their uninstall counterparts likewise perform the complete managed uninstall.
+
 Flags:
 
-- `--agent <all|claude|cursor|cline|roocode|copilot>`
+- `--agent <platform>` (backward-compatible alternative to the positional platform)
+- `--global`, `-g`
 - `--mode <copy|symlink>`
+- `--platform <windows|macos|linux>`
 - `--dir <project-directory>`
+- `--install-root <path>`
 - `--dry-run`
-- `--yes`
+- `--yes`, `-y`
+
+Options accept either `--option value` or `--option=value`. Missing values, unknown options, unsupported platforms, invalid agents, and invalid modes fail with actionable messages and a non-zero exit code.
 
 Commands:
 
-- `configure`
-- `install`
-- `uninstall`
-- `serve`
-- `version`
-- `help`
+| Command | Aliases | Description |
+|---|---|---|
+| `configure` | — | Start interactive post-install configuration |
+| `install [platform]` | default when omitted | Install skills and update selected agent configuration |
+| `install-skills [-g] <platform>` | — | Reference-compatible complete install alias; `-g` selects the platform user directory |
+| `install-agent <platform>` | — | Reference-compatible complete integration alias |
+| `uninstall [platform]` | — | Remove installed skills and managed agent configuration |
+| `uninstall-skills [-g] <platform>` | — | Reference-compatible complete uninstall alias |
+| `uninstall-agent <platform>` | — | Reference-compatible complete integration uninstall alias |
+| `serve` | — | Start the MCP stdio server |
+| `version` | `--version`, `-v` | Print the package version |
+| `help` | `--help`, `-h` | Print command and option help |
+
+Unknown commands fail instead of silently displaying help.
 
 ---
 
@@ -194,7 +258,7 @@ Available tools:
 | Tool | Description |
 |---|---|
 | `list_available_skills` | List all skills with descriptions and file patterns |
-| `get_skill` | Load full SKILL.md for a stack (`java-spring`, `python-backend`, `frontend`, `testing`, `project-conventions`) |
+| `get_skill` | Load full SKILL.md for a skill (`java-spring`, `python-backend`, `frontend`, `testing`, `loop-engineering`, `project-conventions`) |
 | `get_conventions` | Load project-wide conventions (shortcut for `get_skill` with `project-conventions`) |
 | `detect_stack` | Given a file path, return which skill applies and a ready-to-use `get_skill` call |
 
@@ -242,6 +306,8 @@ Or for global package installs:
 ```text
 ~/.ai-skills/developer-stack-skills/
 ```
+
+With `--install-root`, skill folders and hooks are placed under the exact resolved override path instead.
 
 Agent configs get created or updated here:
 
@@ -317,6 +383,7 @@ Same in both cases:
 | `python-backend` | `python-backend/SKILL.md` | FastAPI, SQLAlchemy, Pydantic, pytest |
 | `frontend` | `frontend/SKILL.md` | React, Angular, TypeScript, TanStack Query |
 | `testing` | `testing/SKILL.md` | Unit, integration, E2E across all stacks |
+| `loop-engineering` | `loop-engineering/SKILL.md` | Plan, implement, verify, reflect, and repeat |
 | `project-conventions` | `project-conventions/SKILL.md` | Git, ADRs, naming, PR standards, README |
 
 ---

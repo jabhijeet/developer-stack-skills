@@ -9,8 +9,8 @@ const PACKAGE_ROOT = path.resolve(__dirname, "..");
 
 // ── SKILL_META completeness ──────────────────────────────────
 
-test("SKILL_META contains all five required skills", () => {
-  const required = ["java-spring", "python-backend", "frontend", "testing", "project-conventions"];
+test("SKILL_META contains all six required skills", () => {
+  const required = ["java-spring", "python-backend", "frontend", "testing", "loop-engineering", "project-conventions"];
   for (const skill of required) {
     assert.ok(SKILL_META[skill], `SKILL_META has ${skill}`);
     assert.ok(typeof SKILL_META[skill].description === "string", `${skill} has string description`);
@@ -23,8 +23,8 @@ test("SKILL_NAMES matches SKILL_META keys in order", () => {
   assert.deepEqual(SKILL_NAMES, Object.keys(SKILL_META));
 });
 
-test("non-convention skills have at least one glob", () => {
-  const stackSkills = SKILL_NAMES.filter((n) => n !== "project-conventions");
+test("stack-specific skills have at least one glob", () => {
+  const stackSkills = SKILL_NAMES.filter((n) => !["loop-engineering", "project-conventions"].includes(n));
   for (const skill of stackSkills) {
     assert.ok(SKILL_META[skill].globs.length > 0, `${skill} has at least one glob`);
   }
@@ -169,6 +169,12 @@ test("handleTool get_skill: valid stack returns content, not error", async () =>
   const result = await handleTool("get_skill", { stack_name: "java-spring" });
   assert.ok(!result.isError, "should not be error");
   assert.ok(result.content[0].text.length > 100, "has skill content");
+});
+
+test("handleTool get_skill: returns Loop Engineering workflow", async () => {
+  const result = await handleTool("get_skill", { stack_name: "loop-engineering" });
+  assert.ok(!result.isError, "should not be error");
+  assert.match(result.content[0].text, /Plan → Implement → Verify → Reflect → Repeat/);
 });
 
 test("handleTool detect_stack: returns recommended_skill and next_step", async () => {

@@ -8,7 +8,7 @@ description: >
   database entities, or build configuration.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
 version: 1.0.0
-last-reviewed: 2026-05-15
+last-reviewed: 2026-05-20
 applies-to: Java, Spring Boot, REST APIs, JPA, security, testing, build configuration
 ---
 
@@ -107,7 +107,7 @@ public class UserController {
 ```
 
 ### DTO Convention
-- Use Java `record` for DTOs (Java 16+)
+- Use Java `record` for DTOs (Java 17+ feature — Spring Boot 4 / Java 25 baseline)
 - Suffix: `*Request`, `*Response`, `*DTO`
 
 ```java
@@ -283,7 +283,7 @@ class UserServiceTest {
 class UserControllerTest {
 
     @Autowired MockMvc mockMvc;
-    @MockBean UserService userService;
+    @MockitoBean UserService userService; // @MockBean removed in Spring Boot 4
 
     @Test
     void getUser_Returns200() throws Exception {

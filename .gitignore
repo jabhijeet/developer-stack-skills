@@ -1,3 +1,4 @@
 node_modules/
 .ai-skills/
 .claude/settings.local.json
+/.idea/

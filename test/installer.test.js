@@ -2,9 +2,12 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
+  AGENT_PLATFORMS,
   detectPackageInstallType,
+  detectPlatform,
   getDefaultMode,
   getInstallRoot,
+  getPlatformGlobalRoot,
   parseArgs,
   removeManagedBlock,
   removeSkillsSectionItems,
@@ -31,6 +34,30 @@ test("parseArgs reads install flags", () => {
   assert.equal(result.projectDir, "demo");
   assert.equal(result.dryRun, true);
   assert.equal(result.yes, true);
+});
+
+test("parseArgs reads platform and install root overrides", () => {
+  const result = parseArgs(["install", "--platform=darwin", "--install-root", "custom"]);
+
+  assert.equal(result.platform, "darwin");
+  assert.equal(result.installRoot, "custom");
+});
+
+test("parseArgs reads reference-compatible positional platform and global flag", () => {
+  const result = parseArgs(["install-skills", "-g", "gemini-cli", "--yes"]);
+
+  assert.equal(result.command, "install-skills");
+  assert.equal(result.agent, "gemini-cli");
+  assert.equal(result.global, true);
+  assert.equal(result.yes, true);
+});
+
+test("parseArgs rejects unknown options", () => {
+  assert.throws(() => parseArgs(["install", "--unknown"]), /Unknown option or argument/);
+});
+
+test("parseArgs rejects missing option values", () => {
+  assert.throws(() => parseArgs(["install", "--dir", "--yes"]), /Option --dir requires a value/);
 });
 
 test("parseArgs defaults to interactive install when no command provided", () => {
@@ -100,10 +127,58 @@ test("removeSkillsSectionItems removes empty section", () => {
 });
 
 test("validateArgs normalizes defaults", () => {
-  const result = validateArgs({ agent: "roo", mode: "COPY", projectDir: "." });
+  const result = validateArgs({ agent: "roo", mode: "COPY", platform: "darwin", projectDir: "." });
 
   assert.equal(result.agent, "roocode");
   assert.equal(result.mode, "copy");
+  assert.equal(result.platform, "macos");
+});
+
+test("validateArgs normalizes install root override", () => {
+  const result = validateArgs({
+    agent: "claude",
+    mode: "copy",
+    platform: "linux",
+    projectDir: ".",
+    installRoot: "custom-skills",
+  });
+
+  assert.equal(result.installRoot, require("node:path").resolve("custom-skills"));
+});
+
+test("validateArgs accepts the full platform catalog and aliases", () => {
+  assert.ok(AGENT_PLATFORMS.includes("adal"));
+  assert.ok(AGENT_PLATFORMS.includes("windsurf"));
+  assert.equal(validateArgs({ agent: "gemini-cli", mode: "copy", platform: "linux" }).agent, "gemini");
+  assert.equal(validateArgs({ agent: "kiro-cli", mode: "copy", platform: "linux" }).agent, "kiro");
+});
+
+test("validateArgs requires one platform for global installation", () => {
+  assert.throws(
+    () => validateArgs({ agent: "all", mode: "copy", platform: "linux", global: true }),
+    /requires one agent platform/,
+  );
+});
+
+test("validateArgs rejects invalid agents and modes", () => {
+  assert.throws(
+    () => validateArgs({ agent: "unknown", mode: "copy", platform: "linux" }),
+    /Invalid agent/,
+  );
+  assert.throws(
+    () => validateArgs({ agent: "claude", mode: "hardlink", platform: "linux" }),
+    /Invalid mode/,
+  );
+});
+
+test("detectPlatform maps supported Node platform identifiers", () => {
+  assert.equal(detectPlatform("win32"), "windows");
+  assert.equal(detectPlatform("darwin"), "macos");
+  assert.equal(detectPlatform("linux"), "linux");
+});
+
+test("detectPlatform rejects unsupported platforms", () => {
+  assert.throws(() => detectPlatform("aix"), /Unsupported platform.*windows, macos, linux/);
 });
 
 test("detectPackageInstallType returns local for project node_modules path", () => {
@@ -145,8 +220,33 @@ test("getInstallRoot uses global path for global installs", () => {
   assert.doesNotMatch(result, /^D:\\demo\\app/);
 });
 
+test("getPlatformGlobalRoot uses custom and conventional platform paths", () => {
+  assert.equal(getPlatformGlobalRoot("cline", "D:\\Users\\me"), "D:\\Users\\me\\.agents\\skills");
+  assert.equal(getPlatformGlobalRoot("windsurf", "D:\\Users\\me"), "D:\\Users\\me\\.codeium\\windsurf\\skills");
+  assert.equal(getPlatformGlobalRoot("adal", "D:\\Users\\me"), "D:\\Users\\me\\.adal\\skills");
+});
+
+test("getInstallRoot uses the platform path for explicit global installs", () => {
+  const result = getInstallRoot("D:\\demo\\app", "local", null, "gemini", true);
+
+  assert.match(result, /[\\/]\.gemini[\\/]skills$/);
+});
+
+test("getInstallRoot accepts an explicit absolute override", () => {
+  const result = getInstallRoot("D:\\demo\\app", "local", "D:\\shared\\skills");
+
+  assert.equal(result, "D:\\shared\\skills");
+});
+
 test("getInstallRoot uses project path for local installs", () => {
   const result = getInstallRoot("D:\\demo\\app", "local");
 
   assert.equal(result, "D:\\demo\\app\\.ai-skills\\developer-stack-skills");
+});
+
+test("parseArgs keeps the legacy agent option compatible", () => {
+  const result = parseArgs(["install-agent", "--agent", "cursor", "--yes"]);
+
+  assert.equal(result.command, "install-agent");
+  assert.equal(result.agent, "cursor");
 });

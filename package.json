@@ -1,7 +1,7 @@
 {
   "name": "developer-stack-skills",
   "version": "3.0.0",
-  "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
+  "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, Loop Engineering, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
   "keywords": [
     "ai-agents",
     "skills",
@@ -18,6 +18,7 @@
     "angular",
     "typescript",
     "testing",
+    "loop-engineering",
     "conventions"
   ],
   "author": "Abhijeet",
@@ -34,8 +35,15 @@
   },
   "scripts": {
     "postinstall": "node bin/postinstall.js",
-    "test": "node --test"
+    "test": "node --test",
+    "check": "node --check bin/developer-stack-skills.js && node --check bin/postinstall.js && node --check lib/installer.js && node --check lib/mcp-server.js",
+    "pack:check": "npm pack --dry-run"
   },
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0"
   },
@@ -49,6 +57,7 @@
     "python-backend/SKILL.md",
     "frontend/SKILL.md",
     "testing/SKILL.md",
+    "loop-engineering/SKILL.md",
     "project-conventions/SKILL.md",
     "examples/**/*",
     "README.md",
@@ -60,6 +69,7 @@
     "python-backend": "python-backend/SKILL.md",
     "frontend": "frontend/SKILL.md",
     "testing": "testing/SKILL.md",
+    "loop-engineering": "loop-engineering/SKILL.md",
     "project-conventions": "project-conventions/SKILL.md"
   }
 }

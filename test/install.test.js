@@ -146,8 +146,12 @@ test("configureClaudeRules creates rule files with valid frontmatter", async () 
 
       assert.ok(fm, `${config.skillName} rule has frontmatter`);
       assert.ok(fm.description, `${config.skillName} has description`);
-      assert.ok(fm.globs, `${config.skillName} has globs`);
-      assert.equal(fm.alwaysApply, "false");
+      assert.equal(fm.alwaysApply, String(config.alwaysApply === true));
+      if (config.alwaysApply) {
+        assert.ok(!fm.globs, `${config.skillName} omits globs when always active`);
+      } else {
+        assert.ok(fm.globs, `${config.skillName} has globs`);
+      }
       assert.match(content, /SKILL\.md/, "references skill file");
     }
   });
@@ -223,8 +227,12 @@ test("configureCursor creates per-skill .mdc files with globs frontmatter", asyn
       const fm = parseFrontmatter(content);
 
       assert.ok(fm, `${config.skillName}.mdc has frontmatter`);
-      assert.ok(fm.globs, `${config.skillName}.mdc has globs`);
-      assert.equal(fm.alwaysApply, "false");
+      assert.equal(fm.alwaysApply, String(config.alwaysApply === true));
+      if (config.alwaysApply) {
+        assert.ok(!fm.globs, `${config.skillName}.mdc omits globs when always active`);
+      } else {
+        assert.ok(fm.globs, `${config.skillName}.mdc has globs`);
+      }
     }
 
     // project-conventions should have alwaysApply: true
@@ -467,6 +475,28 @@ test("configureAgents without MCP does not create any MCP files", async () => {
   await withTempDir(async (tmpDir) => {
     await configureAgents({ agent: "cursor", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
     await assert.rejects(fsp.stat(path.join(tmpDir, ".cursor", "mcp.json")), { code: "ENOENT" }, "no cursor MCP when disabled");
+  });
+});
+
+test("configureAgents writes native project artifacts for extended platforms", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "gemini", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+    await configureAgents({ agent: "kiro", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+    await configureAgents({ agent: "antigravity", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+
+    assert.match(await fsp.readFile(path.join(tmpDir, "GEMINI.md"), "utf8"), /developer-stack-skills:start/);
+    assert.match(await fsp.readFile(path.join(tmpDir, ".kiro", "steering", "developer-stack-skills.md"), "utf8"), /java-spring/);
+    assert.match(await fsp.readFile(path.join(tmpDir, ".agent", "rules", "developer-stack-skills.md"), "utf8"), /project-conventions/);
+  });
+});
+
+test("configureAgents uses AGENTS.md fallback for portable platforms", async () => {
+  await withTempDir(async (tmpDir) => {
+    await configureAgents({ agent: "codex", projectDir: tmpDir, installRoot: PACKAGE_ROOT, context: null, generateCommands: false, configureMcpServer: false, packageInstallType: "local", dryRun: false });
+
+    const instructions = await fsp.readFile(path.join(tmpDir, "AGENTS.md"), "utf8");
+    assert.match(instructions, /developer-stack-skills:start/);
+    assert.match(instructions, /testing[\\/]SKILL\.md/);
   });
 });
 

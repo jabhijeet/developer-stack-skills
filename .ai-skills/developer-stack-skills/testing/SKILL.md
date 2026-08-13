@@ -8,7 +8,7 @@ description: >
   or structure tests for any layer of the application.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
 version: 1.0.0
-last-reviewed: 2026-05-15
+last-reviewed: 2026-05-20
 applies-to: Unit tests, integration tests, E2E tests, test reviews, test debugging
 ---
 
@@ -115,7 +115,7 @@ class UserServiceTest {
 class UserControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @MockBean  private UserService userService;
+    @MockitoBean private UserService userService; // replaces @MockBean (removed Spring Boot 4)
     @Autowired private ObjectMapper objectMapper;
 
     @Test
@@ -146,7 +146,7 @@ class UserControllerTest {
 class UserRepositoryTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18-alpine");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -297,17 +297,19 @@ Use `userEvent` (not `fireEvent`) — it simulates real browser interactions.
 
 ---
 
-## Angular — Jasmine + Karma
+## Angular — Jest (Angular 18+)
+
+> **Karma removed in Angular 18.** New projects use Jest (recommended) or Web Test Runner. `ng generate` no longer scaffolds Karma config. Migrate existing projects: `ng generate jest-config` or use the `@angular-builders/jest` builder.
 
 ### Component Test
 ```typescript
 describe("UserCardComponent", () => {
   let fixture: ComponentFixture<UserCardComponent>;
-  let userServiceSpy: jasmine.SpyObj<UserService>;
+  let userServiceSpy: jest.Mocked<UserService>;
 
   beforeEach(async () => {
-    userServiceSpy = jasmine.createSpyObj("UserService", ["getUser"]);
-    userServiceSpy.getUser.and.returnValue(
+    userServiceSpy = { getUser: jest.fn() } as jest.Mocked<UserService>;
+    userServiceSpy.getUser.mockReturnValue(
       of({ id: 1, name: "Alice", email: "alice@example.com" })
     );
 
@@ -330,14 +332,16 @@ describe("UserCardComponent", () => {
 
 ### Service Test
 ```typescript
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting, HttpTestingController } from "@angular/common/http/testing";
+
 describe("UserService", () => {
   let service: UserService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [UserService],
+      providers: [UserService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(UserService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -356,6 +360,8 @@ describe("UserService", () => {
   });
 });
 ```
+
+> `HttpClientTestingModule` is deprecated Angular 18+. Use `provideHttpClient()` + `provideHttpClientTesting()` instead.
 
 ---
 

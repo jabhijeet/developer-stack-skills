@@ -8,8 +8,8 @@ description: >
   in React, Angular, or plain JavaScript/TypeScript projects.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
 version: 1.0.0
-last-reviewed: 2026-05-15
-applies-to: React, Angular, JavaScript, TypeScript, frontend architecture, UI refactors
+last-reviewed: 2026-05-20
+applies-to: React 19+, Angular 21+, JavaScript, TypeScript 5+, frontend architecture, UI refactors
 ---
 
 # Frontend Skill (React · Angular · JavaScript/TypeScript)
@@ -187,7 +187,7 @@ src/app/
 ```
 
 ### Component Rules
-- Use **standalone components** (Angular 17+) by default
+- Use **standalone components** — default since Angular 17, mandatory pattern from Angular 21+
 - Use `OnPush` change detection for all components
 - Use **signals** (`signal`, `computed`, `effect`) for reactive state
 
@@ -215,7 +215,7 @@ export class UserCardComponent {
 ```
 
 ### Service Rules
-- Use `inject()` function (not constructor injection) for Angular 14+
+- Use `inject()` function (not constructor injection) — standard from Angular 14+, required style from Angular 21+
 - Provide at root: `providedIn: 'root'`
 - Return `Observable` from service methods; never subscribe inside services
 

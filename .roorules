@@ -1,14 +1,3 @@
-<!-- developer-stack-skills:start -->
-Use the developer-stack-skills MCP server before editing any file:
-
-1. Call `detect_stack` with the file path to identify the relevant stack.
-2. Call `get_skill` with the detected stack to load its conventions.
-3. Do not preload all skill files — load only the relevant skill on demand.
-
-For cross-cutting decisions, call `get_conventions` to load project-wide standards.
-
-After loading the relevant skill, create a concise implementation plan, state assumptions, then implement.
-<!-- developer-stack-skills:end -->
 
 ## 🗺️ Skill: ProjectMap
 MANDATORY: Read `llm-code-graph.md` BEFORE calling Read, Grep, Glob, or any file tool. It is the canonical index of all files, symbols, and dependency edges. Use it to identify exactly which files to open. Do not inspect raw files without consulting it first. Refresh with `code-graph generate` if stale. If MCP server configured: prefer `get_project_graph` (INSTEAD of Read), `search_symbols` (INSTEAD of Grep), `trace_dependencies` (INSTEAD of manual EDGES parsing). Skipping = task failure.
