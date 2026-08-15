@@ -35,7 +35,7 @@ Why global install still asks for project directory:
 - Global install has two separate outputs:
   1. Skill files go into shared user-level folder: `~/.ai-skills/developer-stack-skills`
   2. Agent config files still get written into one specific project
-- Installer asks for `Project directory` so it knows where to update `CLAUDE.md`, `.clinerules`, `.roo/config.yml`, `.cursor/rules/developer-stack-skills.mdc`, and `.github/copilot-instructions.md`
+- Installer asks for `Project directory` so it knows where to update `CLAUDE.md`, `.clinerules`, `.roo/rules/developer-stack-skills.md`, `.cursor/rules/developer-stack-skills.mdc`, and `.github/copilot-instructions.md`
 - Global package install does not mean "enable skills for every repo automatically"
 - It means "store one shared copy of skills globally, then link chosen project to those skills"
 
@@ -198,7 +198,7 @@ Flags:
 - `--dry-run`
 - `--yes`, `-y`
 
-Options accept either `--option value` or `--option=value`. Missing values, unknown options, unsupported platforms, invalid agents, and invalid modes fail with actionable messages and a non-zero exit code.
+Options accept either `--option value` or `--option=value`. Missing values, unknown options, unsupported platforms, invalid agents, and invalid modes fail with actionable messages and a non-zero exit code. If a managed JSON configuration file contains invalid JSON, the installer preserves the file unchanged and exits non-zero instead of reporting a successful update.
 
 Commands:
 
@@ -314,7 +314,7 @@ Agent configs get created or updated here:
 - `Claude`: `CLAUDE.md`
 - `Cursor`: `.cursor/rules/developer-stack-skills.mdc`
 - `Cline`: `.clinerules`
-- `Roocode`: `.roo/config.yml`
+- `Roo Code`: `.roo/rules/developer-stack-skills.md`
 - `GitHub Copilot`: `.github/copilot-instructions.md`
 
 Notes:
@@ -345,7 +345,7 @@ But agent configs still must be written into a real project, for example:
 ```text
 D:\Projects\my-app\CLAUDE.md
 D:\Projects\my-app\.clinerules
-D:\Projects\my-app\.roo\config.yml
+D:\Projects\my-app\.roo\rules\developer-stack-skills.md
 ```
 
 So `Project directory` prompt is still required. Global install means shared skill storage, not machine-wide auto-enable for every repository.
@@ -380,6 +380,9 @@ Same in both cases:
 | Skill | File | Use When |
 |---|---|---|
 | `java-spring` | `java-spring/SKILL.md` | Spring Boot, JPA, REST APIs, JUnit |
+| `java-data` | `java-data/SKILL.md` | Flyway/Liquibase migrations, JPA/Hibernate, caching, query optimization |
+| `java-spring-ai` | `java-spring-ai/SKILL.md` | Spring AI: LLM chat, RAG, vector stores, function calling |
+| `java-spring-security` | `java-spring-security/SKILL.md` | Spring Security: auth, OAuth2/OIDC/JWT, hardening |
 | `python-backend` | `python-backend/SKILL.md` | FastAPI, SQLAlchemy, Pydantic, pytest |
 | `frontend` | `frontend/SKILL.md` | React, Angular, TypeScript, TanStack Query |
 | `testing` | `testing/SKILL.md` | Unit, integration, E2E across all stacks |

@@ -3,7 +3,7 @@ name: testing
 description: >
   Use this skill for any software testing task. Covers unit, integration, and E2E
   testing strategies across the full stack: JUnit/Mockito for Java/Spring, pytest for
-  Python/FastAPI, Vitest/React Testing Library for React, Jasmine/Karma for Angular, and
+  Python/FastAPI, Vitest/React Testing Library for React, Jest for Angular, and
   Playwright for cross-browser E2E. Trigger when the user asks to write, review, debug,
   or structure tests for any layer of the application.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent

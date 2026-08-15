@@ -1,42 +1,47 @@
 ---
 name: java-spring
 description: >
-  Use this skill for any Java or Spring-related task. Covers Spring Boot application
-  structure, REST API design, JPA/Hibernate, security, exception handling, testing
-  with JUnit/Mockito, and Maven/Gradle build conventions. Trigger when the user asks
-  to create, review, debug, or refactor Java code, Spring Boot services, REST endpoints,
-  database entities, or build configuration.
+  Core Spring Boot application conventions. Use this skill for standard Spring Boot
+  app structure, layered architecture, REST API design, DTO patterns, service layer,
+  JPA entities/repositories, exception handling, controller tests, and Maven/Gradle
+  build setup. When the task involves Spring Security, Spring AI, or advanced data
+  access (database migrations, advanced JPA/Hibernate, connection pooling, caching,
+  query performance), load the dedicated skills java-spring-security, java-spring-ai,
+  or java-data alongside this one.
 compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
-version: 1.0.0
-last-reviewed: 2026-05-20
-applies-to: Java, Spring Boot, REST APIs, JPA, security, testing, build configuration
+version: 2.0.0
+last-reviewed: 2026-08-15
+applies-to: Java, Spring Boot, REST APIs, JPA entities, service layer, DTOs, exception handling, build configuration
 ---
 
-# Java & Spring Boot Skill
+# Java & Spring Boot Skill — Core Fundamentals
 
 ## When to Use This Skill
 
-Load this skill whenever the task involves:
-- Creating or modifying Spring Boot applications
-- Designing or implementing REST APIs in Java
-- Writing JPA entities, repositories, or service layers
-- Handling exceptions, validation, or security in Spring
-- Writing JUnit/Mockito tests
-- Configuring Maven or Gradle builds
-- Reviewing or refactoring existing Java code
+Load this skill for foundational Spring Boot work:
+- Creating or modifying Spring Boot application structure
+- Designing or implementing REST APIs
+- Writing DTOs, services, and controllers
+- Basic JPA entity, repository, and service layer patterns
+- Exception handling and validation
+- Unit and controller tests (MockMvc)
+- Maven or Gradle project setup
+
+When the task crosses into security, AI, or advanced data, also load the dedicated complementary skill.
 
 ## Priority Order
 
 1. Follow existing repo architecture and package layout first
 2. Use this skill's structure as default only for greenfield or unclear repos
 3. If loaded project conventions differ, prefer repo-established pattern and stay consistent
+4. When concerns overlap (e.g., a secured REST endpoint), load both `java-spring` and the relevant complementary skill and merge their rules
 
 ## Output Contract
 
 - State assumptions when repo context is missing
 - List files changed when making edits
 - Add or update tests for behavior changes
-- Avoid unrelated refactors unless they are required to complete task safely
+- Avoid unrelated refactors unless required to complete task safely
 - Call out blockers, risks, and follow-up work explicitly
 
 ## Conflict Resolution
@@ -45,7 +50,7 @@ Use this precedence order when instructions conflict:
 1. Existing repo code and enforced automation
 2. Repo docs and local agent instructions
 3. Loaded `project-conventions/SKILL.md`
-4. This stack skill
+4. This skill + any loaded complementary skill (security, AI, data, etc.)
 5. Generic framework best practices
 
 ---
@@ -162,7 +167,9 @@ public class UserService {
 
 ---
 
-## JPA / Hibernate
+## JPA / Hibernate — Basics
+
+For advanced JPA patterns, query optimization, migrations, and caching, load the `java-data` skill.
 
 ### Entity Rules
 - Use `@Entity` + `@Table(name = "table_name")` explicitly
@@ -206,7 +213,6 @@ public class User {
 
 ## Exception Handling
 
-### Custom Exception Hierarchy
 ```java
 // Base
 public abstract class AppException extends RuntimeException {
@@ -245,7 +251,9 @@ public class GlobalExceptionHandler {
 
 ---
 
-## Testing
+## Testing — Basics
+
+For advanced testing patterns (Testcontainers, contract testing, mutation testing), load the `testing` skill.
 
 ### Unit Tests (Service Layer)
 ```java
@@ -340,6 +348,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 ```
+
+For advanced build topics (multi-module, dependency management, code quality, releases), load the `java-build-tools` skill.
 
 ---
 

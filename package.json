@@ -45,7 +45,7 @@
     "linux"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.6.0"
+    "@modelcontextprotocol/server": "^2.0.0"
   },
   "files": [
     "bin/**/*",
@@ -54,6 +54,9 @@
     "lib/**/*",
     ".claude/rules/**/*",
     "java-spring/SKILL.md",
+    "java-data/SKILL.md",
+    "java-spring-ai/SKILL.md",
+    "java-spring-security/SKILL.md",
     "python-backend/SKILL.md",
     "frontend/SKILL.md",
     "testing/SKILL.md",
@@ -66,6 +69,9 @@
   ],
   "skills": {
     "java-spring": "java-spring/SKILL.md",
+    "java-data": "java-data/SKILL.md",
+    "java-spring-ai": "java-spring-ai/SKILL.md",
+    "java-spring-security": "java-spring-security/SKILL.md",
     "python-backend": "python-backend/SKILL.md",
     "frontend": "frontend/SKILL.md",
     "testing": "testing/SKILL.md",

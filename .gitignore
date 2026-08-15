@@ -2,3 +2,9 @@ node_modules/
 .ai-skills/
 .claude/settings.local.json
 /.idea/
+/.ai-skills/
+/.roo/
+/.claude/
+/.cursor/
+/.github/
+/.roo/

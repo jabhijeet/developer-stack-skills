@@ -4,18 +4,31 @@ const path = require("path");
 const fsp = require("fs/promises");
 
 const { detectStack, handleTool, SKILL_META, SKILL_NAMES } = require("../lib/mcp-server");
+const { SKILLS } = require("../lib/installer");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 
 // ── SKILL_META completeness ──────────────────────────────────
 
-test("SKILL_META contains all six required skills", () => {
-  const required = ["java-spring", "python-backend", "frontend", "testing", "loop-engineering", "project-conventions"];
-  for (const skill of required) {
-    assert.ok(SKILL_META[skill], `SKILL_META has ${skill}`);
+test("SKILL_META registers every installer skill exactly once", () => {
+  assert.deepEqual(Object.keys(SKILL_META).sort(), [...SKILLS].sort());
+});
+
+test("SKILL_META entries are complete and meaningful", () => {
+  for (const skill of SKILL_NAMES) {
     assert.ok(typeof SKILL_META[skill].description === "string", `${skill} has string description`);
     assert.ok(SKILL_META[skill].description.length > 10, `${skill} description is meaningful`);
     assert.ok(Array.isArray(SKILL_META[skill].globs), `${skill} has globs array`);
+  }
+});
+
+test("every SKILL.md folder on disk is registered in SKILL_META", async () => {
+  const entries = await fsp.readdir(PACKAGE_ROOT, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const skillFile = path.join(PACKAGE_ROOT, entry.name, "SKILL.md");
+    try { await fsp.stat(skillFile); } catch { continue; }
+    assert.ok(SKILL_META[entry.name], `SKILL_META registers on-disk skill folder '${entry.name}'`);
   }
 });
 
@@ -46,6 +59,33 @@ test("detectStack: .kt files → java-spring", () => {
 test("detectStack: build files → java-spring", () => {
   assert.equal(detectStack("pom.xml"), "java-spring");
   assert.equal(detectStack("build.gradle"), "java-spring");
+});
+
+// ── detectStack — Java sub-skills ─────────────────────────────
+
+test("detectStack: security Java files → java-spring-security", () => {
+  assert.equal(detectStack("src/main/java/com/app/security/SecurityConfig.java"), "java-spring-security");
+  assert.equal(detectStack("src/main/java/com/app/config/SecurityConfig.java"), "java-spring-security");
+  assert.equal(detectStack("src/main/java/com/app/security/JwtAuthenticationFilter.java"), "java-spring-security");
+  assert.equal(detectStack("src/main/java/com/app/auth/OAuth2ClientConfig.java"), "java-spring-security");
+});
+
+test("detectStack: Spring AI Java files → java-spring-ai", () => {
+  assert.equal(detectStack("src/main/java/com/app/ai/ChatClientConfig.java"), "java-spring-ai");
+  assert.equal(detectStack("src/main/java/com/app/ai/RagService.java"), "java-spring-ai");
+  assert.equal(detectStack("src/main/java/com/app/config/VectorStoreConfig.java"), "java-spring-ai");
+  assert.equal(detectStack("src/main/java/com/app/ai/AiAgentService.java"), "java-spring-ai");
+});
+
+test("detectStack: data layer files → java-data", () => {
+  assert.equal(detectStack("src/main/resources/db/migration/V4__add_status_to_orders.sql"), "java-data");
+  assert.equal(detectStack("src/main/resources/db/changelog/db.changelog-master.xml"), "java-data");
+  assert.equal(detectStack("src/main/java/com/app/config/FlywayConfig.java"), "java-data");
+  assert.equal(detectStack("src/main/java/com/app/db/UserRepository.java"), "java-data");
+});
+
+test("detectStack: plain Java files still → java-spring", () => {
+  assert.equal(detectStack("src/main/java/com/app/repository/UserRepository.java"), "java-spring");
 });
 
 // ── detectStack — Python ─────────────────────────────────────
@@ -122,12 +162,8 @@ test("detectStack: works with forward-slash paths (Unix style)", () => {
 });
 
 test("detectStack: works with backslash paths (Windows style)", () => {
-  // path.basename handles backslashes on all platforms via the name extraction
-  const file = "src\\main\\java\\com\\app\\UserService.java";
-  const result = detectStack(file);
-  // On Windows: basename = "UserService.java" → java-spring
-  // On Unix: basename = full string, but .java$ still matches
-  assert.ok(["java-spring", "project-conventions"].includes(result), `result is valid skill: ${result}`);
+  assert.equal(detectStack("src\\main\\java\\com\\app\\UserService.java"), "java-spring");
+  assert.equal(detectStack("tests\\unit\\UserServiceTest.java"), "testing");
 });
 
 test("detectStack: test file detected before source type", () => {
@@ -163,6 +199,21 @@ test("handleTool unknown tool returns UNKNOWN_TOOL error", async () => {
   const err = parseError(result);
   assert.equal(err.error_type, "UNKNOWN_TOOL");
   assert.equal(err.retryable, false);
+});
+
+test("handleTool returns INVALID_ARGUMENT for missing or invalid arguments", async () => {
+  for (const [toolName, args] of [
+    ["get_skill", undefined],
+    ["get_skill", { stack_name: "" }],
+    ["detect_stack", undefined],
+    ["detect_stack", { file_path: 42 }],
+    ["detect_stack", []],
+  ]) {
+    const result = await handleTool(toolName, args);
+    const err = parseError(result);
+    assert.equal(err.error_type, "INVALID_ARGUMENT");
+    assert.equal(err.retryable, false);
+  }
 });
 
 test("handleTool get_skill: valid stack returns content, not error", async () => {

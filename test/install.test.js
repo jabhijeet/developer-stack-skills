@@ -23,13 +23,17 @@ const {
   configureRoocode,
   configureSharedMcp,
   removeMcpJsonEntry,
+  removeOurHookEntries,
   replaceManagedBlock,
+  runInstall,
+  runUninstall,
   unconfigureCursorMcp,
   unconfigureSharedMcp,
   writeMcpJsonFile,
 } = require("../lib/installer");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
+const pkg = require("../package.json");
 
 // Parse --- ... --- YAML frontmatter into an object
 function parseFrontmatter(content) {
@@ -101,6 +105,25 @@ test("all SKILL.md files exist in package root", async () => {
     assert.ok(stat.isFile(), `${skill}/SKILL.md is a file`);
     const content = await fsp.readFile(skillPath, "utf8");
     assert.ok(content.length > 200, `${skill}/SKILL.md has substantive content`);
+  }
+});
+
+test("every SKILL.md folder on disk is registered in SKILLS", async () => {
+  const entries = await fsp.readdir(PACKAGE_ROOT, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const skillFile = path.join(PACKAGE_ROOT, entry.name, "SKILL.md");
+    try { await fsp.stat(skillFile); } catch { continue; }
+    assert.ok(SKILLS.includes(entry.name), `SKILLS registers on-disk skill folder '${entry.name}'`);
+  }
+});
+
+test("package.json ships and maps every registered skill", () => {
+  for (const skill of SKILLS) {
+    const skillPath = pkg.skills[skill];
+    assert.ok(skillPath, `package.json skills maps '${skill}'`);
+    assert.ok(skillPath.endsWith("/SKILL.md"), `'${skill}' maps to a SKILL.md path`);
+    assert.ok(pkg.files.includes(skillPath), `package.json files includes '${skill}'`);
   }
 });
 
@@ -321,12 +344,15 @@ test("configureSharedMcp preserves other mcpServers entries", async () => {
 
 // ── writeMcpJsonFile / removeMcpJsonEntry ────────────────────
 
-test("writeMcpJsonFile skips and warns on invalid JSON", async () => {
+test("writeMcpJsonFile rejects invalid JSON without changing the file", async () => {
   await withTempDir(async (tmpDir) => {
     const mcpFile = path.join(tmpDir, ".mcp.json");
     await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
     await fsp.writeFile(mcpFile, "{ bad json }", "utf8");
-    await writeMcpJsonFile(mcpFile, "local");
+    await assert.rejects(
+      writeMcpJsonFile(mcpFile, "local"),
+      /invalid JSON; MCP configuration was not changed/,
+    );
     const raw = await fsp.readFile(mcpFile, "utf8");
     assert.equal(raw, "{ bad json }", "invalid JSON file left untouched");
   });
@@ -599,16 +625,69 @@ test("configureClaudeHooks preserves existing non-hook settings", async () => {
   });
 });
 
-test("configureClaudeHooks skips and warns on invalid JSON", async () => {
+test("configureClaudeHooks is idempotent with a custom install root", async () => {
+  await withTempDir(async (tmpDir) => {
+    const hooksDir = path.join(tmpDir, "custom-root", "hooks");
+    await configureClaudeHooks(tmpDir, hooksDir);
+    await configureClaudeHooks(tmpDir, hooksDir);
+
+    const settingsFile = path.join(tmpDir, ".claude", "settings.json");
+    const settings = JSON.parse(await fsp.readFile(settingsFile, "utf8"));
+    assert.equal(settings.PreToolUse.length, 2, "managed hooks are replaced instead of duplicated");
+  });
+});
+
+test("removeOurHookEntries removes exact custom-root hooks and preserves unrelated hooks", () => {
+  const hooksDir = path.join("C:", "custom", "hooks");
+  const managed = {
+    matcher: "Bash",
+    hooks: [{ type: "command", command: `node ${JSON.stringify(path.join(hooksDir, "pre-bash.js"))}` }],
+  };
+  const unrelated = {
+    matcher: "Bash",
+    hooks: [{ type: "command", command: "node C:\\tools\\developer-stack-skills-helper.js" }],
+  };
+
+  assert.deepEqual(removeOurHookEntries([managed, unrelated], hooksDir), [unrelated]);
+});
+
+test("custom-root lifecycle is idempotent and removes managed hooks", async () => {
+  await withTempDir(async (tmpDir) => {
+    const installRoot = path.join(tmpDir, "custom-root");
+    const args = {
+      agent: "claude",
+      mode: "copy",
+      platform: process.platform,
+      projectDir: tmpDir,
+      installRoot,
+      yes: true,
+      dryRun: false,
+    };
+
+    await runInstall(args, { packageInstallType: "source", projectDir: tmpDir });
+    await runInstall(args, { packageInstallType: "source", projectDir: tmpDir });
+
+    const settingsFile = path.join(tmpDir, ".claude", "settings.json");
+    const settings = JSON.parse(await fsp.readFile(settingsFile, "utf8"));
+    assert.equal(settings.PreToolUse.length, 2, "reinstall keeps exactly two managed hooks");
+
+    await runUninstall({ ...args, command: "uninstall" }, { packageInstallType: "source", projectDir: tmpDir });
+    await assert.rejects(fsp.stat(settingsFile), { code: "ENOENT" }, "managed-only settings file removed");
+  });
+});
+
+test("configureClaudeHooks rejects invalid JSON without changing the file", async () => {
   await withTempDir(async (tmpDir) => {
     const settingsFile = path.join(tmpDir, ".claude", "settings.json");
     await fsp.mkdir(path.dirname(settingsFile), { recursive: true });
     await fsp.writeFile(settingsFile, "{ this is not valid json }", "utf8");
 
     const hooksDir = path.join(tmpDir, "hooks");
-    await configureClaudeHooks(tmpDir, hooksDir);
+    await assert.rejects(
+      configureClaudeHooks(tmpDir, hooksDir),
+      /invalid JSON; Claude hooks were not changed/,
+    );
 
-    // File must be unchanged — no data loss
     const raw = await fsp.readFile(settingsFile, "utf8");
     assert.equal(raw, "{ this is not valid json }", "invalid JSON file left untouched");
   });
@@ -635,13 +714,16 @@ test("configureMcp preserves other mcpServers entries", async () => {
   });
 });
 
-test("configureMcp skips and warns on invalid JSON", async () => {
+test("configureMcp rejects invalid JSON without changing the file", async () => {
   await withTempDir(async (tmpDir) => {
     const mcpFile = path.join(tmpDir, ".claude", "mcp.json");
     await fsp.mkdir(path.dirname(mcpFile), { recursive: true });
     await fsp.writeFile(mcpFile, "{ bad json }", "utf8");
 
-    await configureMcp(tmpDir, "global");
+    await assert.rejects(
+      configureMcp(tmpDir, "global"),
+      /invalid JSON; MCP configuration was not changed/,
+    );
 
     const raw = await fsp.readFile(mcpFile, "utf8");
     assert.equal(raw, "{ bad json }", "invalid JSON file left untouched");

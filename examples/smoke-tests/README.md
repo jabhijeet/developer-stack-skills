@@ -26,7 +26,7 @@ The smoke test passes when the agent:
 
 - `copilot/`: `.github/copilot-instructions.md` + prompt
 - `cline/`: `.clinerules` + prompt
-- `roocode/`: `.roo/config.yml` + prompt
+- `roocode/`: `.roo/rules/developer-stack-skills.md` + prompt
 - `claude/`: prompt snippet for system or project instructions
 
 ## Expected Checks
