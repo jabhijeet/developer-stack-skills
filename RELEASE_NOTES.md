@@ -1,6 +1,6 @@
 # Release Notes
 
-## 3.1.0 - 2026-08-16
+## 3.2.0 - 2026-08-16
 
 Adds new advanced skills and completes their full registration so every shipped skill is discoverable across the installer, the MCP server, and the package manifest.
 
