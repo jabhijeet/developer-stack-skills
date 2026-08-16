@@ -8,3 +8,4 @@
 - [RELIABILITY] Invalid managed JSON must remain untouched and propagate a non-zero failure; warning-and-return behavior falsely reports configuration success.
 - [LOGIC] New skills must be registered in every catalog: installer SKILLS/RULE_CONFIGS, mcp-server SKILL_META, and package.json files/skills; derive tests from on-disk skill folders so a missing registration fails CI.
 - [LOGIC] When a detection branch lowercases file names, case-sensitive tokens (e.g. Pipfile) must be lowercased in the regex too; otherwise valid files silently fall through to the default skill.
+- [LOGIC] A skill completeness check that only compares SKILL_META to SKILLS misses skills absent from RULE_CONFIGS, letting a skill ship with no agent rule file; assert every SKILLS entry is covered by RULE_CONFIGS or the conventions config.

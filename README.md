@@ -18,7 +18,7 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `3.2.0`
+Version in this README: `3.3.0`
 
 Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
@@ -157,7 +157,7 @@ developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 3.2.0
+[developer-stack-skills] installing version 3.3.0
 [developer-stack-skills] package install type: global
 [developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows

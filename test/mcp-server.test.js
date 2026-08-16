@@ -37,7 +37,7 @@ test("SKILL_NAMES matches SKILL_META keys in order", () => {
 });
 
 test("stack-specific skills have at least one glob", () => {
-  const stackSkills = SKILL_NAMES.filter((n) => !["loop-engineering", "project-conventions"].includes(n));
+  const stackSkills = SKILL_NAMES.filter((n) => !["loop-engineering", "project-conventions", "documentation", "project-review"].includes(n));
   for (const skill of stackSkills) {
     assert.ok(SKILL_META[skill].globs.length > 0, `${skill} has at least one glob`);
   }

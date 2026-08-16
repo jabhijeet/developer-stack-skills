@@ -1,5 +1,27 @@
 # Release Notes
 
+## 3.3.0 - 2026-08-16
+
+Adds a new `documentation` skill that keeps READMEs, method comments, docstrings, and inline comments brief and self-explanatory, plus a new `project-review` skill for whole-project health audits, each with full registration across the installer, MCP server, and package manifest.
+
+### New Skills
+
+- **`documentation`** — cross-cutting style skill enforcing concise, non-verbose documentation for README files, method comments, docstrings, and inline comments; the code itself should be self-explanatory. Registered as an always-on workflow skill (like `loop-engineering` and `project-conventions`) in the `SKILLS` array and `RULE_CONFIGS` (`lib/installer.js`), `SKILL_META` (`lib/mcp-server.js`), and the package `files`/`skills` maps.
+
+### Added
+
+- `documentation` registered in the `SKILLS` array and `RULE_CONFIGS` with `alwaysApply: true` in `lib/installer.js`
+- `documentation` registered in `SKILL_META` in `lib/mcp-server.js` and the package `files`/`skills` maps
+- `documentation` added to the workflow-skill set excluded from the stack-specific glob assertion in `test/mcp-server.test.js`
+- `project-review` skill for whole-project health audits, registered in the `SKILLS` array and `RULE_CONFIGS` with `alwaysApply: true`, `SKILL_META`, and the package `files`/`skills` maps; added to the workflow-skill exclusion set in `test/mcp-server.test.js`
+
+Fixed:
+
+- `code-review` is now registered in the installer `RULE_CONFIGS`, so it ships an agent rule file (`.claude/rules/` and `.cursor/rules/`) on install. Previously it existed only in `SKILLS`/`SKILL_META` and was never activated for rule-based agents.
+- Added a regression test asserting every registered skill is covered by `RULE_CONFIGS` or the conventions config, so a missing rule registration fails CI.
+
+---
+
 ## 3.2.0 - 2026-08-16
 
 Adds new advanced skills and completes their full registration so every shipped skill is discoverable across the installer, the MCP server, and the package manifest.

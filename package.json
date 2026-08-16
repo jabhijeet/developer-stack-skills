@@ -1,6 +1,6 @@
 {
   "name": "developer-stack-skills",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, Loop Engineering, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
   "keywords": [
     "ai-agents",
@@ -69,6 +69,8 @@
     "devops/SKILL.md",
     "graphql/SKILL.md",
     "code-review/SKILL.md",
+    "documentation/SKILL.md",
+    "project-review/SKILL.md",
     "examples/**/*",
     "agent-roots.json",
     "README.md",
@@ -91,6 +93,8 @@
     "security-hardening": "security-hardening/SKILL.md",
     "devops": "devops/SKILL.md",
     "graphql": "graphql/SKILL.md",
-    "code-review": "code-review/SKILL.md"
+    "code-review": "code-review/SKILL.md",
+    "documentation": "documentation/SKILL.md",
+    "project-review": "project-review/SKILL.md"
   }
 }

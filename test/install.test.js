@@ -127,6 +127,14 @@ test("package.json ships and maps every registered skill", () => {
   }
 });
 
+test("every registered skill is covered by RULE_CONFIGS or the conventions config", () => {
+  const ruleNames = RULE_CONFIGS.map((cfg) => cfg.skillName);
+  for (const skill of SKILLS) {
+    const covered = skill === CONVENTIONS_RULE_CONFIG.skillName || ruleNames.includes(skill);
+    assert.ok(covered, `'${skill}' has an agent rule/alwaysApply registration (RULE_CONFIGS or CONVENTIONS_RULE_CONFIG)`);
+  }
+});
+
 test("all SKILL.md files have YAML frontmatter with required fields", async () => {
   for (const skill of SKILLS) {
     const skillPath = path.join(PACKAGE_ROOT, skill, "SKILL.md");
