@@ -305,14 +305,16 @@ spring:
 
 ## Non-Negotiable Rules
 
-- **Always** use parameterized queries or derived query methods — never concatenate SQL strings
-- **Never** return `null` from a repository — return `Optional<T>`
-- **Always** test migrations on a copy of production data before applying to prod
-- **Always** keep transaction boundaries as narrow as possible
-- **Never** swallow exceptions in transactional code without explicit rollback handling
-- **Always** close `EntityManager` and `Session` resources properly
-- Use `READ_COMMITTED` as the default isolation level; escalate only with proven need
-- Profile before optimizing — N+1 problems should be detected with logging or APM, not assumed
+- **Always** use parameterized queries or derived query methods — never concatenate SQL strings; string concatenation is SQL injection
+- **Never** return `null` from a repository — return `Optional<T>`; nulls lead to NPE surprises
+- **Always** test migrations on a copy of production data before applying to prod — migrations cannot be undone; test rigorously
+- **Always** keep transaction boundaries as narrow as possible — long transactions lock resources and reduce concurrency
+- **Never** swallow exceptions in transactional code without explicit rollback handling — suppress all but the specific exception you handle
+- **Always** close `EntityManager` and `Session` resources properly — use try-with-resources or Spring's managed transactions
+- Use `READ_COMMITTED` as the default isolation level; escalate to `REPEATABLE_READ` or `SERIALIZABLE` only with proven need
+- Never modify an already-executed migration — create a new version instead; immutability is non-negotiable for migrations
+- Profile before optimizing — N+1 problems should be detected with logging or APM, not assumed; speculation wastes time
+- Test all query optimization changes with realistic data volumes; micro-optimizations on small datasets are misleading
 
 ---
 

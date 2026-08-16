@@ -170,17 +170,22 @@ Iteration N
 For long tasks, maintain a checklist and update it after each loop. Do not mark work complete
 before verification succeeds.
 
-## Guardrails
+## Guardrails (CRITICAL — Do Not Violate)
 
-- Set explicit success criteria before non-trivial implementation
-- Limit each iteration to one coherent objective
-- Prefer evidence over confidence or intuition
-- Escalate verification depth with blast radius and risk
-- Preserve a passing baseline; do not accumulate unexplained failures
-- Stop repeating an unchanged approach after failure; revise the hypothesis
-- Keep failed-attempt artifacts out of the final change unless they provide lasting value
-- Never weaken tests or requirements merely to make verification pass
-- Avoid endless loops: after repeated failed iterations, summarize evidence and replan
+- **Never** skip evidence collection before calling work "complete" — no evidence = unverified
+- **Never** set unrealistic success criteria that can't be verified — all criteria must be testable
+- **Never** mix unrelated changes into a single loop — one coherent objective per loop
+- **Never** weaken tests or requirements merely to make verification pass — fix the code instead
+- **Never** suppress or ignore test failures — investigate every failure thoroughly
+- **Never** accumulate unexplained failures across iterations — stop and replan
+- **Always** preserve a passing baseline; never commit broken code to shared branches
+- **Always** stop repeating an unchanged approach after failure — revise the hypothesis or escalate
+- **Always** escalate blockers early — do not spend multiple loops stuck on unresolvable issues
+- **Always** keep failed-attempt artifacts out of the final change unless they provide lasting value
+- **Always** update the checklist after each loop for transparency and accountability
+- **Never** claim iteration completion before verification succeeds — success criteria must be demonstrated
+- **Always** distinguish verified facts from unverified assumptions in completion reports
+- After repeated failed iterations (3+), stop and request clarification — churning is not progress
 
 ## Completion Contract
 

@@ -336,15 +336,21 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 ## Non-Negotiable Rules
 
-- **Never** store or log plaintext passwords
-- **Never** disable CSRF for state-changing browser apps — only for stateless REST APIs
-- **Always** use HTTPS in production; enforce with `requiresChannel()`
-- **Always** use `SessionCreationPolicy.STATELESS` for JWT-based REST APIs
-- **Always** validate JWT signatures and expiration on the resource server
-- **Always** scope OAuth2 tokens minimally; avoid broad scopes like `admin`
-- **Always** use `@EnableMethodSecurity` (not the deprecated `@EnableGlobalMethodSecurity`)
-- **Always** test both authorized and unauthorized access paths
-- Keep security config DRY: extract common matchers into constants or DSL helpers
+- **Never** store or log plaintext passwords — always hash with BCrypt strength 12+, never MD5 or SHA1
+- **Never** disable CSRF for state-changing browser apps — only for stateless REST APIs with `SessionCreationPolicy.STATELESS`
+- **Never** trust JWT tokens without validating signature, expiration, and issuer — validate on every request
+- **Never** send authentication details in URL parameters — use Authorization headers or secure cookies only
+- **Never** hardcode secrets — load JWT secrets, OAuth credentials from environment or Key Vault
+- **Never** return sensitive data in error messages — never expose user IDs, hashes, or system internals to attackers
+- **Always** use HTTPS in production; enforce with `requiresChannel()` or equivalent — never allow HTTP for authenticated endpoints
+- **Always** use `SessionCreationPolicy.STATELESS` for JWT-based REST APIs — stateless scales; sessions don't
+- **Always** scope OAuth2 tokens minimally — avoid broad scopes like `admin`; use fine-grained permissions
+- **Always** validate JWT signatures and expiration on the resource server — do not trust the client
+- **Always** use `@EnableMethodSecurity` not the deprecated `@EnableGlobalMethodSecurity`
+- **Always** test both authorized AND unauthorized access paths — never assume defaults work
+- **Always** check authorization at object level, not just role level — verify user owns the resource
+- Implement explicit session fixation protection; use `migrateSession()` or `newSession()` on login
+- Rate-limit authentication endpoints (login, token refresh) to prevent brute force and credential stuffing
 
 ---
 

@@ -421,10 +421,14 @@ test("user can log in with valid credentials", async ({ page }) => {
 
 ## Non-Negotiable Rules
 
-- **Never** test private methods or internal implementation details
-- **Never** use `Thread.sleep()` / `setTimeout` in tests — use proper async utilities
-- **Always** clean up state in `@BeforeEach` / `beforeEach` / `setUp`
-- **Always** test at least one happy path and one failure path per behavior
-- **Always** use the Page Object Model for E2E tests
-- Mock only external dependencies (DB, HTTP, filesystem) — not your own code
-- If a test is hard to write, the production code is probably too tightly coupled — refactor
+- **Never** test private methods or internal implementation details — test behavior through public APIs only
+- **Never** use `Thread.sleep()` / `setTimeout` in tests — use proper async utilities (`waitFor`, `latch`, `CountDownLatch`, `Flux.blockLast()`)
+- **Never** share test state between tests — each test must be independently executable and repeatable
+- **Never** mock your own code — mock only external dependencies (DB, HTTP, file system); if code is hard to test, it's too tightly coupled
+- **Never** weaken tests or assertions to make them pass — if a test is failing, fix the code, not the test
+- **Always** clean up state in `@BeforeEach` / `beforeEach` / `setUp` — not `@Before` or constructor
+- **Always** test at least one happy path and one failure path per behavior — not just "code runs"
+- **Always** use the Page Object Model for E2E tests to avoid brittle selectors and duplicate navigation logic
+- **Always** write descriptive test names: `method_WhenCondition_ExpectedResult` or `should_do_X_when_Y` not `test1`, `testX`
+- **Always** assert meaningful behavior — never test without assertions; a passing test with no assertions is not a test
+- Tests are documentation — a developer should understand the system by reading tests; make them clear and complete

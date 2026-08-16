@@ -391,11 +391,16 @@ Maintain a `CHANGELOG.md` using [Keep a Changelog](https://keepachangelog.com/) 
 
 ## Non-Negotiable Rules
 
-- **Never** commit directly to protected long-lived branches (`main`, `develop`, or repo-defined equivalent) — always use a PR
-- **Never** commit secrets or credentials of any kind
-- **Never** merge a PR with failing CI checks
-- **Never** leave `TODO` without a linked ticket ID
-- **Always** provide `.env.example` when adding a new environment variable
-- **Always** write an ADR for decisions affecting more than one developer or service
-- **Always** keep PRs under 400 lines — split if larger
-- Branch names, commit messages, and PR titles must follow the conventions in this skill
+- **Never** commit directly to protected long-lived branches (`main`, `develop`, or repo-defined equivalent) — always use a PR with CI passing + approval
+- **Never** commit secrets, credentials, API keys, passwords, or PII of any kind — use environment variables; if exposed, rotate immediately
+- **Never** merge a PR with failing CI checks — CI is not optional; fix failures first
+- **Never** leave `// TODO` without a linked ticket ID — untracked TODOs accumulate technical debt invisibly
+- **Never** commit .env files with secrets — use .env.example as a template
+- **Never** rewrite history of pushed commits — rebase locally before push; after push, use reverts or new commits
+- **Always** provide `.env.example` when adding a new environment variable — document all required vars
+- **Always** write an ADR for decisions affecting more than one developer or service — architectural decisions need documentation
+- **Always** keep PRs under 400 lines changed — split large features into smaller, reviewable PRs; large PRs hide bugs
+- Branch names, commit messages, and PR titles must follow the conventions in this skill — automation can enforce with CI
+- Every commit must build and pass tests — do not commit broken code; use `--no-verify` only in emergency
+- Force-push to main is forbidden — it corrupts history and loses blame information
+- Never use reserved branch names on feature branches (`main`, `develop`, `release/*`, `hotfix/*` are protected)

@@ -309,14 +309,20 @@ export const api = {
 
 ## Non-Negotiable Rules
 
-- **Never** use `any` in TypeScript — define proper types
-- **Never** fetch data directly inside components — use hooks or services
-- **Never** mutate React state directly (`state.items.push(x)` is wrong)
-- **Never** subscribe and forget in Angular — always use `async` pipe or unsubscribe
-- **Always** handle loading and error states in UI — never assume success
-- **Always** use environment variables for API base URLs and config
-- **Always** lazy-load routes to keep initial bundle small
-- Write accessible markup: semantic HTML, ARIA labels, keyboard navigability
+- **Never** use `any` in TypeScript — define proper types or use `unknown` with type guards; `any` defeats the purpose of TypeScript
+- **Never** fetch data directly inside components — use custom hooks, services, or TanStack Query; this enables caching, testing, and reusability
+- **Never** mutate React state directly (`state.items.push(x)` is wrong) — always use setState or immutable updates
+- **Never** subscribe and forget in Angular — always use `async` pipe or unsubscribe in `OnDestroy`; subscription leaks cause memory leaks
+- **Never** trust client-side validation alone — always validate on the server; client validation is UX only, never security
+- **Never** hardcode API URLs — always use environment variables; different environments need different URLs
+- **Never** use `dangerouslySetInnerHTML` or `[innerHTML]` with untrusted data — XSS is a critical vulnerability
+- **Never** bypass TypeScript compiler with `// @ts-ignore` — fix the root cause instead; ignores hide real bugs
+- **Always** handle loading and error states in UI — never assume success; failed networks happen constantly
+- **Always** lazy-load routes to keep initial bundle small (`React.lazy`, Angular lazy modules)
+- **Always** sanitize and escape all user input before rendering — use framework defaults (React escapes, Angular's built-in escaping)
+- **Always** write accessible markup — semantic HTML, ARIA labels for screen readers, keyboard navigability is not optional
+- **Always** test async operations properly — use `waitFor`, `screen.findBy*`, proper async test utilities
+- **Always** enable strict mode in `tsconfig.json`: `"strict": true` — treat warnings as errors
 
 ---
 

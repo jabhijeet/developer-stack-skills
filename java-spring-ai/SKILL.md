@@ -328,14 +328,16 @@ class RagServiceIT {
 
 ## Non-Negotiable Rules
 
-- **Never** commit API keys or secrets; use environment variables or Spring Vault
-- **Always** set a timeout on LLM calls (e.g., 30s) to avoid hanging requests
-- **Always** implement fallback behavior when the AI service is unavailable
-- **Always** validate and sanitize user inputs before sending them to the model
-- **Always** log token usage and cost for production AI features
-- **Never** trust model output blindly — apply business validation and guardrails
-- **Always** version prompt templates and track changes in ADRs when prompts affect product behavior
-- Prefer parameterized prompts over string concatenation to avoid injection
+- **Never** commit API keys or secrets — use environment variables or Spring Vault; rotate immediately if exposed
+- **Always** set a timeout on LLM calls (e.g., 30s default, max 60s) — without timeout, hanging requests cripple services
+- **Always** implement fallback behavior when the AI service is unavailable — assume external services will fail
+- **Always** validate and sanitize user inputs before sending them to the model — prompt injection is a real vulnerability
+- **Always** log token usage and cost for production AI features — costs scale exponentially; monitor continuously
+- **Never** trust model output blindly — apply business validation, guardrails, and sanity checks; LLMs hallucinate
+- **Always** version prompt templates and track changes in ADRs when prompts affect product behavior — prompt changes are code changes
+- Prefer parameterized prompts over string concatenation to avoid injection attacks and accidental data leakage
+- Implement rate limiting on AI endpoints — token costs are passed through; unlimited access = unlimited bill
+- Cache responses when applicable — embeddings and common queries should be cached to reduce latency and cost
 
 ---
 

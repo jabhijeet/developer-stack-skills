@@ -258,7 +258,7 @@ Available tools:
 | Tool | Description |
 |---|---|
 | `list_available_skills` | List all skills with descriptions and file patterns |
-| `get_skill` | Load full SKILL.md for a skill (`java-spring`, `python-backend`, `frontend`, `testing`, `loop-engineering`, `project-conventions`) |
+| `get_skill` | Load full SKILL.md for a skill (`java-spring`, `java-data`, `java-spring-ai`, `java-spring-security`, `python-backend`, `frontend`, `testing`, `loop-engineering`, `project-conventions`, `typescript-5`, `ci-cd`, `test-coverage`, `security-hardening`, `devops`, `graphql`) |
 | `get_conventions` | Load project-wide conventions (shortcut for `get_skill` with `project-conventions`) |
 | `detect_stack` | Given a file path, return which skill applies and a ready-to-use `get_skill` call |
 
@@ -375,7 +375,79 @@ Same in both cases:
 
 ---
 
+---
+
+## Runtime Configuration with Dynamic Installation Paths
+
+Skills installation paths are now driven by **`agent-roots.json`**, a centralized mapping file that eliminates hardcoded dependencies and makes the system extensible for future agents.
+
+### How It Works
+
+Instead of hardcoding paths for each agent in the installer, the system now:
+
+1. **Reads `agent-roots.json`** — Contains canonical paths for all 50+ supported agent platforms
+2. **Resolves paths dynamically** — The `resolveSkillPath()` function looks up agent root and applies mode (`copy` or `symlink`)
+3. **Validates on startup** — Checks that resolved paths exist before using them
+4. **Logs version mismatches** — Warns if installed skill versions differ from expected
+
+### Agent Path Mapping
+
+The `agent-roots.json` file maps each agent to its canonical skill directory:
+
+```json
+{
+  "agent-roots": {
+    "claude": {
+      "root": ["~", ".claude", "skills"],
+      "description": "Claude AI agent"
+    },
+    "cline": {
+      "root": ["~", ".agents", "skills"],
+      "description": "Cline agent"
+    },
+    "cursor": {
+      "root": ["~", ".cursor", "skills"],
+      "description": "Cursor IDE"
+    }
+  }
+}
+```
+
+### Using the Path Resolver
+
+**For developers extending the system:**
+
+```javascript
+const { resolveSkillPath, loadAgentRoots, validateSkillPath } = require('lib/resolver.js');
+
+// Load agent roots mapping
+const agentRoots = await loadAgentRoots('./agent-roots.json');
+
+// Resolve path for specific agent
+const path = resolveSkillPath('claude', 'symlink', agentRoots);
+// Returns: /Users/username/.claude/skills
+
+// Validate resolved path exists
+const exists = await validateSkillPath(path);
+```
+
+### Installation Modes
+
+- **`copy` mode** — Creates `.ai-skills` subdirectory at resolved path (for project-local installs)
+- **`symlink` mode** — Uses resolved path directly (for global agent directories)
+
+### Validation & Warnings
+
+The installer now:
+- ✅ Verifies each agent's root directory exists after installation
+- ⚠️ Warns if a required path is missing and suggests reinstalling the agent
+- 📊 Logs version mismatches between required and installed skill versions
+
+---
+
 ## Skills Included
+
+### Core Skills
 
 | Skill | File | Use When |
 |---|---|---|
@@ -388,6 +460,17 @@ Same in both cases:
 | `testing` | `testing/SKILL.md` | Unit, integration, E2E across all stacks |
 | `loop-engineering` | `loop-engineering/SKILL.md` | Plan, implement, verify, reflect, and repeat |
 | `project-conventions` | `project-conventions/SKILL.md` | Git, ADRs, naming, PR standards, README |
+
+### Advanced Skills
+
+| Skill | File | Use When |
+|---|---|---|
+| `typescript-5` | `typescript-5/SKILL.md` | Advanced TypeScript: conditional types, generics, Zod integration, exhaustiveness checking |
+| `ci-cd` | `ci-cd/SKILL.md` | GitHub Actions, GitLab CI, Jenkins pipelines for multi-stack projects |
+| `test-coverage` | `test-coverage/SKILL.md` | Interpret coverage reports, set thresholds, improve test quality |
+| `security-hardening` | `security-hardening/SKILL.md` | OWASP Top 10 mitigation, secure coding patterns, Azure-ready configurations |
+| `devops` | `devops/SKILL.md` | Docker, Kubernetes, Terraform/Bicep, infrastructure as code |
+| `graphql` | `graphql/SKILL.md` | GraphQL schema design, Java/Python server, React/Vue clients |
 
 ---
 

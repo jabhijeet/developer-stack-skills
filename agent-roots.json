@@ -1,0 +1,237 @@
+{
+  "agent-roots": {
+    "adal": {
+      "root": ["~", ".adal", "skills"],
+      "description": "ADAL agent"
+    },
+    "aider": {
+      "root": ["~", ".aider", "skills"],
+      "description": "Aider agent"
+    },
+    "aider-desk": {
+      "root": ["~", ".aider-desk", "skills"],
+      "description": "Aider Desk agent"
+    },
+    "amp": {
+      "root": ["~", ".config", "agents", "skills"],
+      "description": "AMP agent"
+    },
+    "antigravity": {
+      "root": ["~", ".gemini", "antigravity", "skills"],
+      "description": "Antigravity agent"
+    },
+    "augment": {
+      "root": ["~", ".augment", "skills"],
+      "description": "Augment agent"
+    },
+    "bob": {
+      "root": ["~", ".bob", "skills"],
+      "description": "Bob agent"
+    },
+    "claude": {
+      "root": ["~", ".claude", "skills"],
+      "description": "Claude AI agent"
+    },
+    "cline": {
+      "root": ["~", ".agents", "skills"],
+      "description": "Cline agent"
+    },
+    "codearts-agent": {
+      "root": ["~", ".codeartsdoer", "skills"],
+      "description": "CodeArts agent"
+    },
+    "codebuddy": {
+      "root": ["~", ".codebuddy", "skills"],
+      "description": "CodeBuddy agent"
+    },
+    "codemaker": {
+      "root": ["~", ".codemaker", "skills"],
+      "description": "CodeMaker agent"
+    },
+    "codestudio": {
+      "root": ["~", ".codestudio", "skills"],
+      "description": "CodeStudio agent"
+    },
+    "codex": {
+      "root": ["~", ".codex", "skills"],
+      "description": "Codex agent"
+    },
+    "command-code": {
+      "root": ["~", ".commandcode", "skills"],
+      "description": "Command Code agent"
+    },
+    "continue": {
+      "root": ["~", ".continue", "skills"],
+      "description": "Continue IDE extension"
+    },
+    "copilot": {
+      "root": ["~", ".copilot", "skills"],
+      "description": "GitHub Copilot"
+    },
+    "cortex": {
+      "root": ["~", ".snowflake", "cortex", "skills"],
+      "description": "Snowflake Cortex agent"
+    },
+    "crush": {
+      "root": ["~", ".config", "crush", "skills"],
+      "description": "Crush agent"
+    },
+    "cursor": {
+      "root": ["~", ".cursor", "skills"],
+      "description": "Cursor IDE"
+    },
+    "deepagents": {
+      "root": ["~", ".deepagents", "agent", "skills"],
+      "description": "DeepAgents"
+    },
+    "devin": {
+      "root": ["~", ".config", "devin", "skills"],
+      "description": "Devin agent"
+    },
+    "droid": {
+      "root": ["~", ".factory", "skills"],
+      "description": "Droid agent"
+    },
+    "firebender": {
+      "root": ["~", ".firebender", "skills"],
+      "description": "Firebender agent"
+    },
+    "forgecode": {
+      "root": ["~", ".forge", "skills"],
+      "description": "ForgeCode agent"
+    },
+    "gemini": {
+      "root": ["~", ".gemini", "skills"],
+      "description": "Gemini agent"
+    },
+    "generic": {
+      "root": ["~", ".generic-agent", "skills"],
+      "description": "Generic agent"
+    },
+    "goose": {
+      "root": ["~", ".config", "goose", "skills"],
+      "description": "Goose agent"
+    },
+    "hermes": {
+      "root": ["~", ".hermes", "skills"],
+      "description": "Hermes agent"
+    },
+    "iflow-cli": {
+      "root": ["~", ".iflow", "skills"],
+      "description": "iFlow CLI"
+    },
+    "intellij": {
+      "root": ["~", ".intellij", "skills"],
+      "description": "IntelliJ IDEA agent"
+    },
+    "junie": {
+      "root": ["~", ".junie", "skills"],
+      "description": "Junie agent"
+    },
+    "kilo": {
+      "root": ["~", ".kilocode", "skills"],
+      "description": "KiloCode agent"
+    },
+    "kimi-cli": {
+      "root": ["~", ".config", "agents", "skills"],
+      "description": "Kimi CLI agent"
+    },
+    "kiro": {
+      "root": ["~", ".kiro", "skills"],
+      "description": "Kiro agent"
+    },
+    "kode": {
+      "root": ["~", ".kode", "skills"],
+      "description": "Kode agent"
+    },
+    "mcpjam": {
+      "root": ["~", ".mcpjam", "skills"],
+      "description": "MCP Jam agent"
+    },
+    "mistral-vibe": {
+      "root": ["~", ".vibe", "skills"],
+      "description": "Mistral Vibe agent"
+    },
+    "mux": {
+      "root": ["~", ".mux", "skills"],
+      "description": "Mux agent"
+    },
+    "neovate": {
+      "root": ["~", ".neovate", "skills"],
+      "description": "Neovate agent"
+    },
+    "openclaw": {
+      "root": ["~", ".openclaw", "skills"],
+      "description": "OpenClaw agent"
+    },
+    "opencode": {
+      "root": ["~", ".config", "opencode", "skills"],
+      "description": "OpenCode agent"
+    },
+    "openhands": {
+      "root": ["~", ".openhands", "skills"],
+      "description": "OpenHands agent"
+    },
+    "pi": {
+      "root": ["~", ".pi", "agent", "skills"],
+      "description": "Pi agent"
+    },
+    "pochi": {
+      "root": ["~", ".pochi", "skills"],
+      "description": "Pochi agent"
+    },
+    "qoder": {
+      "root": ["~", ".qoder", "skills"],
+      "description": "Qoder agent"
+    },
+    "qwen-code": {
+      "root": ["~", ".qwen", "skills"],
+      "description": "Qwen Code agent"
+    },
+    "replit": {
+      "root": ["~", ".config", "agents", "skills"],
+      "description": "Replit agent"
+    },
+    "roocode": {
+      "root": ["~", ".roo", "skills"],
+      "description": "Roo-Code agent"
+    },
+    "rovodev": {
+      "root": ["~", ".rovodev", "skills"],
+      "description": "RovoDev agent"
+    },
+    "tabnine-cli": {
+      "root": ["~", ".tabnine", "agent", "skills"],
+      "description": "TabNine CLI"
+    },
+    "trae": {
+      "root": ["~", ".trae", "skills"],
+      "description": "Trae agent"
+    },
+    "trae-cn": {
+      "root": ["~", ".trae-cn", "skills"],
+      "description": "Trae CN agent"
+    },
+    "universal": {
+      "root": ["~", ".config", "agents", "skills"],
+      "description": "Universal agent"
+    },
+    "vscode": {
+      "root": ["~", ".vscode", "skills"],
+      "description": "Visual Studio Code"
+    },
+    "warp": {
+      "root": ["~", ".agents", "skills"],
+      "description": "Warp terminal agent"
+    },
+    "windsurf": {
+      "root": ["~", ".codeium", "windsurf", "skills"],
+      "description": "Windsurf IDE"
+    },
+    "zencoder": {
+      "root": ["~", ".zencoder", "skills"],
+      "description": "Zencoder agent"
+    }
+  }
+}
+

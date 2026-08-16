@@ -62,7 +62,14 @@
     "testing/SKILL.md",
     "loop-engineering/SKILL.md",
     "project-conventions/SKILL.md",
+    "typescript-5/SKILL.md",
+    "ci-cd/SKILL.md",
+    "test-coverage/SKILL.md",
+    "security-hardening/SKILL.md",
+    "devops/SKILL.md",
+    "graphql/SKILL.md",
     "examples/**/*",
+    "agent-roots.json",
     "README.md",
     "RELEASE_NOTES.md",
     "CHANGELOG.md"
@@ -76,6 +83,12 @@
     "frontend": "frontend/SKILL.md",
     "testing": "testing/SKILL.md",
     "loop-engineering": "loop-engineering/SKILL.md",
-    "project-conventions": "project-conventions/SKILL.md"
+    "project-conventions": "project-conventions/SKILL.md",
+    "typescript-5": "typescript-5/SKILL.md",
+    "ci-cd": "ci-cd/SKILL.md",
+    "test-coverage": "test-coverage/SKILL.md",
+    "security-hardening": "security-hardening/SKILL.md",
+    "devops": "devops/SKILL.md",
+    "graphql": "graphql/SKILL.md"
   }
 }

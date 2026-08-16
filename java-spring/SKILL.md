@@ -355,14 +355,19 @@ For advanced build topics (multi-module, dependency management, code quality, re
 
 ## Non-Negotiable Rules
 
-- **Never** use field injection (`@Autowired` on fields) — always constructor injection
-- **Never** expose JPA entities in API responses — always use DTOs
-- **Never** catch generic `Exception` — catch specific types
-- **Always** validate input at controller layer with `@Valid`
-- **Always** use `Optional` return from repositories; never return `null`
-- **Always** write at least one test per public service method
-- Use Lombok to reduce boilerplate; use `@Slf4j` for logging (never `System.out.println`)
-- Log meaningful context: `log.warn("User not found: id={}", id)` not `log.warn("error")`
+- **Never** use field injection (`@Autowired` on fields) — always constructor injection via `@RequiredArgsConstructor`
+- **Never** expose JPA entities in API responses — always use DTOs exclusively; exception handling is non-negotiable
+- **Never** catch generic `Exception` — always catch specific exception types; generic catches hide bugs
+- **Never** let database exceptions leak to API responses — wrap with domain exceptions
+- **Never** return `null` from repositories — use `Optional<T>`; NPE is a defect waiting to happen
+- **Never** hardcode business logic thresholds; use configuration or constants with documentation
+- **Always** validate input at controller layer with `@Valid` + `@RestControllerAdvice` for centralized error handling
+- **Always** write at least one test per public service method — happy path + at least one failure case
+- **Always** use Lombok to reduce boilerplate (never raw getters/setters); use `@Slf4j` for logging (never `System.out.println`)
+- **Always** log meaningful context with variables, never just strings: `log.warn("User not found: id={}", id)` not `log.warn("error")`
+- **Always** apply `@Valid` to DTOs and validate before business logic runs
+- **Always** use HTTP status codes correctly: 400 for validation, 401/403 for auth, 404 for not found, 5xx only for server errors
+- Reject empty or null bodies with 400, never 500; preserve 500 for true server faults only
 
 ---
 

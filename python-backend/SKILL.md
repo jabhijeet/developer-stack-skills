@@ -392,14 +392,20 @@ uv run pytest
 
 ## Non-Negotiable Rules
 
-- **Never** hardcode secrets — always use environment variables via `pydantic-settings`
-- **Never** return raw ORM models from endpoints — always use Pydantic response schemas
-- **Never** use mutable default arguments: `def f(items=[])` — use `None` and check inside
-- **Always** use `async def` + `await` for all I/O in FastAPI
-- **Always** type-annotate all function signatures and return types
-- **Always** handle `None` explicitly — never assume a DB query returns a result
-- Use `ruff` for linting and formatting (replaces flake8 + black + isort)
-- Use `mypy` for static type checking in CI
+- **Never** hardcode secrets — always use environment variables via `pydantic-settings`; consider Azure Key Vault or AWS Secrets Manager
+- **Never** return raw ORM models from endpoints — always use Pydantic response schemas exclusively
+- **Never** use mutable default arguments: `def f(items=[])` — use `None` and check inside; mutable defaults are shared across calls and lead to bugs
+- **Never** mix sync blocking calls inside async functions; use `run_in_executor` if unavoidable, but refactor the blocking code
+- **Never** trust `DATABASE_URL` without validation; always test connections in startup hooks
+- **Always** use `async def` + `await` for all I/O in FastAPI — blocking calls will cripple concurrency
+- **Always** type-annotate all function signatures and return types — use strict type checking in CI (`mypy --strict`)
+- **Always** handle `None` explicitly — never assume a DB query returns a result without checking; `.get_or_404()` is your friend
+- **Always** use parameterized queries — never concatenate SQL strings (`f-strings` for SQL are injection vulnerabilities)
+- **Always** validate request payloads with Pydantic models — rely on `Field()` constraints (min_length, regex, etc.) not manual checks
+- Use `ruff` for linting and formatting (replaces flake8 + black + isort); enable in CI and pre-commit hooks
+- Use `mypy` for static type checking in CI — treat type errors as build failures
+- Use `pytest-asyncio` for async tests; mark with `@pytest.mark.asyncio` without exception
+- Close all resources explicitly (DB sessions, HTTP clients) using `async with` or try-finally
 
 ---
 
