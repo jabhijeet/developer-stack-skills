@@ -68,6 +68,7 @@
     "security-hardening/SKILL.md",
     "devops/SKILL.md",
     "graphql/SKILL.md",
+    "code-review/SKILL.md",
     "examples/**/*",
     "agent-roots.json",
     "README.md",
@@ -89,6 +90,7 @@
     "test-coverage": "test-coverage/SKILL.md",
     "security-hardening": "security-hardening/SKILL.md",
     "devops": "devops/SKILL.md",
-    "graphql": "graphql/SKILL.md"
+    "graphql": "graphql/SKILL.md",
+    "code-review": "code-review/SKILL.md"
   }
 }

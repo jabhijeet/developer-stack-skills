@@ -1,3 +1,15 @@
+---
+name: typescript-5
+description: >
+  Use this skill for advanced TypeScript work. Covers conditional types, generics,
+  utility types, Zod-backed runtime validation, template literal types, exhaustiveness
+  checking, and type-safe patterns. Trigger when the user asks to write, review, or
+  refactor complex TypeScript types or type-safe application code.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: TypeScript, advanced types, generics, Zod, exhaustiveness checking
+---
 # TypeScript 5+ Advanced Features
 
 Advanced TypeScript techniques for full-stack developers: conditional types, generics, utility types, Zod integration, exhaustiveness checking, template literal types, and type-safe patterns.

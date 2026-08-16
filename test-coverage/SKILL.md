@@ -1,3 +1,15 @@
+---
+name: test-coverage
+description: >
+  Use this skill to interpret coverage reports, set meaningful thresholds, and improve
+  test quality. Covers coverage tooling, gaps analysis, and quality gates. Trigger when
+  the user asks about coverage numbers, coverage gaps, or setting up/raising coverage
+  thresholds.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: Test coverage, coverage reports, quality gates
+---
 # Test Coverage & Quality Metrics
 
 Interpret coverage reports, set meaningful thresholds, and improve test quality. Coverage ≠ Quality, but it's a useful metric for finding gaps.

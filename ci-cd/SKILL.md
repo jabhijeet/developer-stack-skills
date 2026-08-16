@@ -1,3 +1,15 @@
+---
+name: ci-cd
+description: >
+  Use this skill for CI/CD pipeline work. Covers GitHub Actions, GitLab CI, and Jenkins
+  across multi-stack projects (Java, Python, JavaScript/TypeScript), including build,
+  test, publish, and deploy stages. Trigger when the user asks to create, review, or
+  debug CI/CD pipelines.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: CI/CD, GitHub Actions, GitLab CI, Jenkins pipelines
+---
 # CI/CD Pipeline Setup & Best Practices
 
 Comprehensive guide for setting up CI/CD pipelines with GitHub Actions, GitLab CI, and Jenkins tailored to multi-stack projects (Java, Python, JavaScript/TypeScript).

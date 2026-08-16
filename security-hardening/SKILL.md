@@ -1,3 +1,14 @@
+---
+name: security-hardening
+description: >
+  Use this skill for application security hardening. Covers OWASP Top 10 mitigation,
+  secure coding patterns, dependency scanning, and Azure-ready configurations for Java
+  and Python applications. Trigger for security reviews and hardening tasks.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: Security, OWASP Top 10, hardening, secure coding
+---
 # Security Hardening & OWASP Top 10 Mitigation
 
 Practical security guidance for Java/Python applications covering OWASP Top 10 vulnerabilities, secure coding patterns, and Azure-ready configurations.

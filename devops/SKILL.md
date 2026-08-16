@@ -1,3 +1,14 @@
+---
+name: devops
+description: >
+  Use this skill for infrastructure and containerization. Covers Docker, Kubernetes,
+  Terraform/Bicep Infrastructure as Code, and Azure-native DevOps practices. Trigger
+  when working with containers, orchestration, IaC, or deployment infrastructure.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: Docker, Kubernetes, Terraform, Bicep, IaC
+---
 # DevOps: Docker, Kubernetes, and Infrastructure as Code
 
 Containerization strategies, Kubernetes deployments, Infrastructure as Code (Terraform, Bicep), and Azure-native DevOps practices.

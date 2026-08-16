@@ -1,3 +1,14 @@
+---
+name: graphql
+description: >
+  Use this skill for GraphQL APIs. Covers schema-first design, Java/Spring GraphQL,
+  Python/Strawberry servers, and React/Vue client integration. Trigger when building or
+  modifying GraphQL schemas, resolvers, or clients.
+compatibility: Roocode, Cline, GitHub Copilot, Claude, Cursor, any LLM-based coding agent
+version: 1.0.0
+last-reviewed: 2026-08-16
+applies-to: GraphQL, schema design, resolvers, clients
+---
 # GraphQL: API Design, Schema Management, and Client Integration
 
 Build type-safe GraphQL APIs with Java/Spring, Python/Strawberry, and integrate with React/Vue clients. Schema-first design patterns and production best practices.
