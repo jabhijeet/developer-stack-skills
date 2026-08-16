@@ -1,5 +1,21 @@
 # Release Notes
 
+## 3.1.0 - 2026-08-16
+
+Adds new advanced skills and completes their full registration so every shipped skill is discoverable across the installer, the MCP server, and the package manifest.
+
+### New Skills
+
+- **`code-review`** — unified pull-request and code-review skill with a checklist covering correctness, security, performance, style, and testing for any language (Java, Python, JavaScript/TypeScript, Go, Rust). Registered in `SKILLS`, `SKILL_META`, and the package `files`/`skills` maps.
+- **`typescript-5`**, **`ci-cd`**, **`test-coverage`**, **`security-hardening`**, **`devops`**, **`graphql`** — existing skill folders now ship with complete YAML frontmatter (`name`, `description`, and metadata) and are fully registered in the installer and MCP server.
+
+### Added
+
+- YAML frontmatter (`name`, `description`, `compatibility`, `version`, `last-reviewed`, `applies-to`) added to `typescript-5`, `ci-cd`, `test-coverage`, `security-hardening`, `devops`, `graphql`
+- `code-review` added to the `SKILLS` array in `lib/installer.js`, `SKILL_META` in `lib/mcp-server.js`, and the package `files`/`skills` maps
+
+---
+
 ## 3.0.0 - 2026-05-20
 
 This release makes MCP the primary delivery mechanism for all supported agents, introduces structured MCP error responses, updates all stack versions to current LTS, and expands multi-agent MCP configuration.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.1.0 - 2026-08-16
+
+Added:
+
+- `code-review` skill — unified PR/code-review checklist (correctness, security, performance, style, testing)
+- YAML frontmatter (`name`, `description`, `compatibility`, `version`, `last-reviewed`, `applies-to`) on `typescript-5`, `ci-cd`, `test-coverage`, `security-hardening`, `devops`, `graphql`
+
+Changed:
+
+- `code-review` registered in `SKILLS` (`lib/installer.js`), `SKILL_META` (`lib/mcp-server.js`), and the package `skills`/`files` maps
+- All shipped skill folders are now parseable by the installer and MCP server
+
 ## 3.0.0 - 2026-05-20
 
 Breaking:
