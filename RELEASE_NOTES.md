@@ -1,5 +1,66 @@
 # Release Notes
 
+## 4.0.0 - 2026-10-23
+
+Makes the Claude Code integration actually work, and cuts how much context the skills cost. In 3.x, three of the four Claude Code pieces were written in formats Claude Code never reads: the hooks never ran, their reminders were shown only to the user, and the MCP server was registered in a file Claude Code doesn't load. The fourth, the rule files, loaded all 18 skills into every session. 4.0 replaces them with native skills that load on demand, adds a `doctor` command to check an install, and makes skill detection cover every skill.
+
+### Upgrade
+
+```bash
+npm install -g developer-stack-skills@4
+developer-stack-skills install --dir ./app --yes
+developer-stack-skills doctor --dir ./app
+```
+
+Reinstalling migrates a 3.x project: it removes the old `.claude/rules/developer-stack-skills-*.md` files, moves hooks to `hooks.PreToolUse`, and moves the MCP entry from `.claude/mcp.json` to `.mcp.json`. `doctor` reports anything left over. See [Upgrading to 4.0](README.md#upgrading-to-40) for the full list.
+
+### Breaking Changes
+
+- **Native Claude Code skills replace rule files.** Skills install to `.claude/skills/<skill>/` and load only when a task matches their description. `CLAUDE.md` gets a short block naming the always-on skills (`loop-engineering`, `project-conventions`, `documentation`, `project-review`) instead of file paths to preload.
+- **Default agent is `auto`.** The installer configures the agents it finds in the project (`CLAUDE.md`/`.claude`, `.cursor`, `.clinerules`, `.roo`, `.github/copilot-instructions.md`, `GEMINI.md`, `.kiro`, `.agent`, `AGENTS.md`). An empty project gets Claude Code plus `AGENTS.md`. Pass `--agent all` for the old behaviour; it now writes each format once.
+- **Some `detect_stack` results changed.** `*Repository.java`/`*Entity.java` → `java-data`, plain `.js`/`.mjs`/`.cjs` → `typescript-5`, `Dockerfile` and Terraform → `devops`, CI files → `ci-cd`, `README*` → `documentation`, `package.json` → `project-conventions`.
+- **Library API.** `configureClaude(dir, context, useMcp, dryRun)` drops the conventions path. `configureCline`, `configureRoocode`, `configureCopilot`, and `configureInstructionFile` take the install root instead of an array of skill paths. `configureClaudeRules` and `CONVENTIONS_RULE_CONFIG` are removed.
+- **MCP launch command.** Generated configs use `npx -y` (no hang on an install prompt), `cmd /c` on Windows, and `node <checkout>/bin/developer-stack-skills.js` for source checkouts.
+
+### Claude Code Fixes
+
+| Piece | 3.x | 4.0 |
+|---|---|---|
+| Hooks | Top-level `PreToolUse` in `.claude/settings.json` (ignored) | `hooks.PreToolUse` |
+| Hook output | `systemMessage` (user only) | `hookSpecificOutput.additionalContext` (reaches Claude) |
+| MCP server | `.claude/mcp.json` (never read) | `.mcp.json` at project root |
+| Skills | 18 rule files with Cursor-style frontmatter, all loaded every session | `.claude/skills/`, loaded on demand |
+
+The write hook also fires on `MultiEdit`, and the bash hook ignores lockfile restores (`npm install`, `npm ci`, `pip install -r …`), firing only when a dependency is added.
+
+### New Features
+
+- **`doctor` command.** Read-only check of skill folders (missing, broken links, outdated copies), hook and MCP scripts, JSON validity, and leftovers from 3.x. Exits 1 on errors, so it can run in CI.
+- **Skill detection for every skill.** One registry (`lib/skills.js`) defines each skill's description and file patterns; `detect_stack`, the Cursor rules, and the write hook all use it. The most specific pattern wins, and test files always resolve to `testing`.
+- **MCP additions.** `get_skill_section` returns one section of a skill by heading. `detect_stack` returns `related_skills`. Every skill is available as a `skill://<name>` resource, and the five slash commands are exposed as MCP prompts for any MCP client.
+- **Safe installs into shared skill folders.** An existing `.claude/skills/<name>` or `~/.claude/skills/<name>` you created is never overwritten or removed; `--force` replaces it. Copied skills carry a `.developer-stack-skills` marker with the package version.
+- **Skill index for other agents.** Cline, Roo Code, Copilot, Gemini, Kiro, Antigravity, and `AGENTS.md` get one line per skill (name, description, path) and an instruction to read only what matches, instead of "read and follow" all 18.
+
+### Other Fixes
+
+- Write-hook migration advice now matches Flyway (`V<n>__description.sql`) instead of the date-prefix format Flyway ignores.
+- Narrower patterns: `devops` no longer matches every YAML file, `graphql` every TypeScript file, `security-hardening` every `*Config.java`.
+- `npx` runs copy files into the project instead of linking into npm's purgeable cache.
+- Uninstalling one agent keeps the shared `.mcp.json` entry while Claude Code, Cline, or Roo Code still uses it.
+- `-g` installs no longer add a `hooks` folder to the agent's skills directory.
+- Interactive prompts re-ask on a typo; options without a command (`developer-stack-skills --dry-run`) run an install.
+- MCP read errors other than a missing file are reported as `INTERNAL_ERROR`.
+- Node.js 22 is supported again (`>=22.0.0`).
+- MCP SDK raised to `@modelcontextprotocol/server@^2.3.1`, which fixes three high-severity advisories in 2.0.0–2.2.0. They affect the HTTP transport and bearer auth, which this stdio-only package does not use, but the old range allowed those versions. Note that the SDK's license changed from MIT to Apache-2.0 in 2.3.x.
+
+### Project
+
+- CI on GitHub Actions: Node 22 and 24 on Linux, Windows, and macOS, running syntax checks, tests, and `npm pack --dry-run`.
+- New tests run the hooks as separate processes, cover the full install/uninstall lifecycle, and talk to the MCP server over stdio (154 tests, up from 125).
+- `.claude/rules` and the unused path resolver are no longer shipped.
+
+---
+
 ## 3.3.0 - 2026-08-16
 
 Adds a new `documentation` skill that keeps READMEs, method comments, docstrings, and inline comments brief and self-explanatory, plus a new `project-review` skill for whole-project health audits, each with full registration across the installer, MCP server, and package manifest.

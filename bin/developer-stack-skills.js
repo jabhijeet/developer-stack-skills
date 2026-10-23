@@ -12,7 +12,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const commands = [
     "install", "install-skills", "install-agent", "configure",
-    "uninstall", "uninstall-skills", "uninstall-agent", "serve",
+    "uninstall", "uninstall-skills", "uninstall-agent", "serve", "doctor",
     "version", "--version", "-v", "help", "--help", "-h",
   ];
 
@@ -33,6 +33,14 @@ async function main() {
   if (args.command === "serve") {
     const { runMcpServer } = require("../lib/mcp-server");
     await runMcpServer();
+    return;
+  }
+
+  if (args.command === "doctor") {
+    const { runDoctor, printDoctorReport } = require("../lib/doctor");
+    const report = await runDoctor({ projectDir: args.projectDir || process.cwd(), installRoot: args.installRoot });
+    printDoctorReport(report);
+    if (report.errors > 0) process.exitCode = 1;
     return;
   }
 

@@ -1,9 +1,5 @@
-Use the developer-stack-skills MCP server before editing any file:
+Developer stack skills are installed in `.claude/skills/` and load on demand when a task matches their description.
 
-1. Call `detect_stack` with the file path to identify the relevant stack.
-2. Call `get_skill` with the detected stack to load its conventions.
-3. Do not preload all skill files — load only the relevant skill on demand.
+Apply these skills to all work: `loop-engineering`, `project-conventions`, `documentation`, `project-review`.
 
-For cross-cutting decisions, call `get_conventions` to load project-wide standards.
-
-After loading the relevant skill, create a concise implementation plan, state assumptions, then implement requested changes.
+For an unfamiliar file type, the `developer-stack-skills` MCP server's `detect_stack` tool names the matching skill.

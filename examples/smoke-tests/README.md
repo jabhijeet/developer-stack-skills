@@ -27,7 +27,9 @@ The smoke test passes when the agent:
 - `copilot/`: `.github/copilot-instructions.md` + prompt
 - `cline/`: `.clinerules` + prompt
 - `roocode/`: `.roo/rules/developer-stack-skills.md` + prompt
-- `claude/`: prompt snippet for system or project instructions
+- `claude/`: the `CLAUDE.md` block the installer writes (skills themselves go to `.claude/skills/`) + prompt
+
+On Windows, the installer writes the MCP command as `cmd /c npx -y developer-stack-skills serve`; the `.mcp.json` fixtures show the macOS/Linux form.
 
 ## Expected Checks
 

@@ -3,7 +3,18 @@ const assert = require("node:assert/strict");
 const path = require("path");
 const fsp = require("fs/promises");
 
-const { detectStack, handleTool, SKILL_META, SKILL_NAMES } = require("../lib/mcp-server");
+const {
+  detectStack,
+  extractSection,
+  getPrompt,
+  handleTool,
+  listPrompts,
+  listResources,
+  readResource,
+  SKILL_META,
+  SKILL_NAMES,
+  TOOLS,
+} = require("../lib/mcp-server");
 const { SKILLS } = require("../lib/installer");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
@@ -48,7 +59,12 @@ test("stack-specific skills have at least one glob", () => {
 test("detectStack: .java source files → java-spring", () => {
   assert.equal(detectStack("src/UserService.java"), "java-spring");
   assert.equal(detectStack("src/main/java/com/app/UserController.java"), "java-spring");
-  assert.equal(detectStack("UserRepository.java"), "java-spring");
+  assert.equal(detectStack("Contest.java"), "java-spring", "*Test.java is case-sensitive");
+});
+
+test("detectStack: Spring config files → java-spring", () => {
+  assert.equal(detectStack("src/main/resources/application.yml"), "java-spring");
+  assert.equal(detectStack("src/main/resources/application-prod.properties"), "java-spring");
 });
 
 test("detectStack: .kt files → java-spring", () => {
@@ -84,8 +100,10 @@ test("detectStack: data layer files → java-data", () => {
   assert.equal(detectStack("src/main/java/com/app/db/UserRepository.java"), "java-data");
 });
 
-test("detectStack: plain Java files still → java-spring", () => {
-  assert.equal(detectStack("src/main/java/com/app/repository/UserRepository.java"), "java-spring");
+test("detectStack: repositories and entities → java-data", () => {
+  assert.equal(detectStack("src/main/java/com/app/repository/UserRepository.java"), "java-data");
+  assert.equal(detectStack("UserRepository.java"), "java-data");
+  assert.equal(detectStack("src/main/java/com/app/model/OrderEntity.java"), "java-data");
 });
 
 // ── detectStack — Python ─────────────────────────────────────
@@ -122,8 +140,8 @@ test("detectStack: Angular-specific files → frontend", () => {
   assert.equal(detectStack("src/app/users.module.ts"), "frontend");
 });
 
-test("detectStack: package.json → frontend", () => {
-  assert.equal(detectStack("package.json"), "frontend");
+test("detectStack: package.json is not treated as frontend (backend Node projects have one too)", () => {
+  assert.equal(detectStack("package.json"), "project-conventions");
 });
 
 // ── detectStack — Testing (checked before source) ───────────
@@ -147,11 +165,40 @@ test("detectStack: TypeScript test files → testing", () => {
 
 // ── detectStack — Conventions fallback ──────────────────────
 
-test("detectStack: unknown files fall back to project-conventions", () => {
-  assert.equal(detectStack("README.md"), "project-conventions");
-  assert.equal(detectStack("Dockerfile"), "project-conventions");
+test("detectStack: conventions files and unknown files → project-conventions", () => {
   assert.equal(detectStack(".gitignore"), "project-conventions");
   assert.equal(detectStack("CHANGELOG.md"), "project-conventions");
+  assert.equal(detectStack(".env.example"), "project-conventions");
+  assert.equal(detectStack("notes.txt"), "project-conventions");
+});
+
+// ── detectStack — skills previously unreachable ─────────────
+
+test("detectStack: every skill with globs is reachable", () => {
+  const cases = {
+    "typescript-5": ["src/types/api.d.ts", "lib/installer.js", "server/app.mjs", "tsconfig.json"],
+    devops: ["Dockerfile", "docker-compose.yml", "infra/main.tf", "k8s/deploy.yaml", "infra/main.bicep"],
+    "ci-cd": [".github/workflows/ci.yml", ".gitlab-ci.yml", "Jenkinsfile"],
+    graphql: ["schema.graphql", "src/main/resources/graphql/schema.graphqls"],
+    "test-coverage": ["coverage/lcov.info", "vitest.config.ts", ".coveragerc"],
+    "security-hardening": [".env", "SECURITY.md"],
+    "code-review": [".github/PULL_REQUEST_TEMPLATE.md"],
+    documentation: ["README.md", "docs/guide/setup.md"],
+  };
+  for (const [skill, paths] of Object.entries(cases)) {
+    for (const filePath of paths) {
+      assert.equal(detectStack(filePath), skill, `${filePath} → ${skill}`);
+    }
+  }
+});
+
+test("detectStack: Node backend code is not routed to frontend", () => {
+  assert.notEqual(detectStack("lib/installer.js"), "frontend");
+  assert.equal(detectStack("src/components/Button.js"), "frontend", "component folders stay frontend");
+});
+
+test("detectStack: Python files in a security folder stay python-backend", () => {
+  assert.equal(detectStack("app/security/auth.py"), "python-backend");
 });
 
 // ── Cross-platform path handling ─────────────────────────────
@@ -234,6 +281,59 @@ test("handleTool detect_stack: returns recommended_skill and next_step", async (
   const payload = JSON.parse(result.content[0].text);
   assert.equal(payload.recommended_skill, "java-spring");
   assert.ok(payload.next_step.includes("get_skill"));
+});
+
+test("handleTool detect_stack: lists other matching skills", async () => {
+  const result = await handleTool("detect_stack", { file_path: "src/main/java/com/app/config/SecurityConfig.java" });
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(payload.recommended_skill, "java-spring-security");
+  assert.ok(payload.related_skills.includes("java-spring"));
+  assert.ok(!payload.related_skills.includes("java-spring-security"));
+});
+
+test("handleTool get_skill_section returns one section only", async () => {
+  const result = await handleTool("get_skill_section", { stack_name: "loop-engineering", heading: "loop engineering" });
+  assert.ok(!result.isError, result.content[0].text);
+  assert.match(result.content[0].text, /^#+ .*Loop Engineering/i);
+  const full = await handleTool("get_skill", { stack_name: "loop-engineering" });
+  assert.ok(result.content[0].text.length <= full.content[0].text.length);
+});
+
+test("handleTool get_skill_section lists headings when none match", async () => {
+  const result = await handleTool("get_skill_section", { stack_name: "testing", heading: "no-such-heading-xyz" });
+  const err = parseError(result);
+  assert.equal(err.error_type, "SECTION_NOT_FOUND");
+  assert.match(err.message, /Available headings:\n#/);
+});
+
+test("extractSection ignores headings inside code fences and stops at the next peer heading", () => {
+  const markdown = "# Top\n## A\nalpha\n```bash\n# not a heading\n```\n### A.1\nsub\n## B\nbeta\n";
+  const section = extractSection(markdown, "A");
+  assert.ok(section.found);
+  assert.equal(section.text, "## A\nalpha\n```bash\n# not a heading\n```\n### A.1\nsub");
+});
+
+test("tool schemas describe every skill instead of a stale subset", () => {
+  const getSkill = TOOLS.find((tool) => tool.name === "get_skill");
+  assert.deepEqual(getSkill.inputSchema.properties.stack_name.enum, SKILL_NAMES);
+  assert.doesNotMatch(getSkill.inputSchema.properties.stack_name.description, /java-spring, java-data/);
+});
+
+test("resources expose every skill as skill://<name>", async () => {
+  const resources = listResources();
+  assert.deepEqual(resources.map((resource) => resource.uri), SKILL_NAMES.map((name) => `skill://${name}`));
+  const read = await readResource("skill://testing");
+  assert.match(read.contents[0].text, /^---/);
+  await assert.rejects(readResource("skill://cobol"), /Unknown resource/);
+});
+
+test("prompts expose the bundled slash commands with $ARGUMENTS substituted", async () => {
+  const prompts = await listPrompts();
+  assert.ok(prompts.some((prompt) => prompt.name === "write-tests"));
+  const prompt = await getPrompt("write-tests", { arguments: "src/UserService.java" });
+  assert.match(prompt.messages[0].content.text, /Write tests for: src\/UserService\.java/);
+  assert.doesNotMatch(prompt.messages[0].content.text, /^---/);
+  await assert.rejects(getPrompt("nope"), /Unknown prompt/);
 });
 
 test("handleTool get_conventions: returns content, not error", async () => {

@@ -2,7 +2,9 @@
 
 > AI agent SKILL.md files for full-stack developers — Java, Python, React, Angular, Testing, and Project Conventions.
 
-Compatible with **Claude**, **Cline**, **Roocode**, **GitHub Copilot**, and **Cursor**.
+Compatible with **Claude Code**, **Cursor**, **Cline**, **Roo Code**, **GitHub Copilot**, **Gemini CLI**, **Kiro**, **Antigravity**, and any agent that reads `AGENTS.md`.
+
+Upgrading from 3.x? See [Upgrading to 4.0](#upgrading-to-40).
 
 ---
 
@@ -18,7 +20,7 @@ Global install:
 npm install -g developer-stack-skills
 ```
 
-Version in this README: `3.3.0`
+Version in this README: `4.0.0`
 
 Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
@@ -29,13 +31,18 @@ Interactive `npm install` can auto-run post-install configuration, but recent np
   Installs skills into `~/.ai-skills/developer-stack-skills`
   Default mode prompt prefers `symlink`
   Post-install configure step: `developer-stack-skills configure`
+- `npx developer-stack-skills install`
+  Installs skills into `<project>/.ai-skills/developer-stack-skills`
+  Default mode is `copy`, because npx runs from a cache npm can purge (links into it would break)
+
+Requires Node.js 22 or later.
 
 Why global install still asks for project directory:
 
 - Global install has two separate outputs:
   1. Skill files go into shared user-level folder: `~/.ai-skills/developer-stack-skills`
   2. Agent config files still get written into one specific project
-- Installer asks for `Project directory` so it knows where to update `CLAUDE.md`, `.clinerules`, `.roo/rules/developer-stack-skills.md`, `.cursor/rules/developer-stack-skills.mdc`, and `.github/copilot-instructions.md`
+- Installer asks for `Project directory` so it knows where to update `CLAUDE.md`, `.claude/skills/`, `.clinerules`, `.roo/rules/developer-stack-skills.md`, `.cursor/rules/`, and `.github/copilot-instructions.md`
 - Global package install does not mean "enable skills for every repo automatically"
 - It means "store one shared copy of skills globally, then link chosen project to those skills"
 
@@ -93,12 +100,12 @@ npx developer-stack-skills serve
 Installer will:
 
 1. Detect Windows, macOS, or Linux automatically and reject unsupported operating systems
-2. Ask which agent to configure: `all`, `claude`, `cursor`, `cline`, `roocode`, or `copilot`
-3. Ask whether to `copy` files or create `symlink`
+2. Ask which agent to configure. The default, `auto`, configures the agents already present in the project (detected from `CLAUDE.md`/`.claude`, `.cursor`, `.clinerules`, `.roo`, `.github/copilot-instructions.md`, `GEMINI.md`, `.kiro`, `.agent`, `AGENTS.md`); an empty project gets Claude Code plus `AGENTS.md`. `all` writes every config format once.
+3. Ask whether to `copy` files or create `symlink` (re-asks on a typo)
 4. Ask which project directory to install into when needed
 5. Install all skill folders into project or global skill directory
 6. Update agent-specific config files in that project
-7. Log package version, package install type (`source`, `local`, or `global`), install scope, OS, source directory, install directory, and each generated config path
+7. Log package version, package install type (`source`, `local`, `npx`, or `global`), install scope, OS, source directory, install directory, and each generated config path
 
 ## Supported platforms and target paths
 
@@ -150,6 +157,7 @@ Use the same `--install-root` for uninstall that was used for install.
 Non-interactive install:
 
 ```bash
+developer-stack-skills install --mode symlink --dir . --yes
 developer-stack-skills install --agent all --mode symlink --dir . --yes
 developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 ```
@@ -157,33 +165,41 @@ developer-stack-skills uninstall --agent all --dir . --dry-run --yes
 Example log output:
 
 ```text
-[developer-stack-skills] installing version 3.3.0
+[developer-stack-skills] installing version 4.0.0
 [developer-stack-skills] package install type: global
 [developer-stack-skills] skill install scope: global
 [developer-stack-skills] os: windows
 [developer-stack-skills] package dir: C:\Users\<you>\AppData\Roaming\npm\node_modules\developer-stack-skills
 [developer-stack-skills] project dir: D:\Projects\my-app
 [developer-stack-skills] install dir: C:\Users\<you>\.ai-skills\developer-stack-skills
-[developer-stack-skills] skill installed: java-spring -> C:\Users\<you>\.ai-skills\developer-stack-skills\java-spring
-[developer-stack-skills] cline config updated: D:\Projects\my-app\.clinerules
+[developer-stack-skills] agent: auto
+[developer-stack-skills] mode: symlink
+[developer-stack-skills] skill installed: C:\Users\<you>\.ai-skills\developer-stack-skills\java-spring
+[developer-stack-skills] hooks installed: C:\Users\<you>\.ai-skills\developer-stack-skills\hooks
+[developer-stack-skills] claude updated: D:\Projects\my-app\CLAUDE.md
+[developer-stack-skills] claude-skills updated: D:\Projects\my-app\.claude\skills\java-spring
+[developer-stack-skills] claude-hooks updated: D:\Projects\my-app\.claude\settings.json
+[developer-stack-skills] claude-mcp updated: D:\Projects\my-app\.mcp.json
 [developer-stack-skills] install complete
 ```
 
 ### Platform integration details
 
-Every supported platform receives all bundled skills. Platforms with native instruction formats get native artifacts; the rest receive the same mandatory paths through `AGENTS.md`.
+Every supported platform receives all bundled skills. Platforms with native instruction formats get native artifacts; the rest receive a skill index through `AGENTS.md`. Instruction files list each skill with its description and path and tell the agent to read only the skills that match the task, never all of them up front.
 
 | Platform | Action taken | Project files |
 | :--- | :--- | :--- |
-| Claude Code | Installs rules, hooks, optional commands, MCP config, and managed instructions. | `CLAUDE.md`, `.claude/rules/`, `.claude/settings.json`, `.claude/commands/`, `.claude/mcp.json` |
-| Cursor | Writes always-on `.mdc` rules and optional MCP config. | `.cursor/rules/`, `.cursor/mcp.json` |
+| Claude Code | Installs native skills (loaded on demand from their descriptions), hooks, optional commands, MCP config, and a short managed block. | `CLAUDE.md`, `.claude/skills/`, `.claude/settings.json`, `.claude/commands/`, `.mcp.json` |
+| Cursor | Writes one `.mdc` rule per skill (glob-scoped, or always-on for cross-cutting skills) and optional MCP config. | `.cursor/rules/`, `.cursor/mcp.json` |
 | Cline | Writes managed skill or MCP instructions. | `.clinerules`, `.mcp.json` |
 | Roo Code | Writes native rules and optional shared MCP config. | `.roo/rules/developer-stack-skills.md`, `.mcp.json` |
 | GitHub Copilot / VS Code | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
 | Gemini CLI | Writes managed Gemini memory instructions. | `GEMINI.md` |
 | Kiro IDE / CLI | Writes a steering file. | `.kiro/steering/developer-stack-skills.md` |
 | Antigravity | Writes a native agent rule. | `.agent/rules/developer-stack-skills.md` |
-| Codex, OpenCode, IntelliJ, Aider, Trae, and other platforms | Writes portable mandatory instructions. | `AGENTS.md` |
+| Codex, OpenCode, IntelliJ, Aider, Trae, and other platforms | Writes a portable skill index. | `AGENTS.md` |
+
+Native skills never overwrite a folder you created: an existing `.claude/skills/<name>` (or `~/.claude/skills/<name>` for `-g claude`) that was not installed by this package is skipped with a message. Pass `--force` to replace it.
 
 `install-skills` and `install-agent` are reference-compatible aliases for the complete install because this package's skills, hooks, and on-demand MCP guidance form one integration unit. Their uninstall counterparts likewise perform the complete managed uninstall.
 
@@ -196,6 +212,7 @@ Flags:
 - `--dir <project-directory>`
 - `--install-root <path>`
 - `--dry-run`
+- `--force` (replace skill folders that this package did not create)
 - `--yes`, `-y`
 
 Options accept either `--option value` or `--option=value`. Missing values, unknown options, unsupported platforms, invalid agents, and invalid modes fail with actionable messages and a non-zero exit code. If a managed JSON configuration file contains invalid JSON, the installer preserves the file unchanged and exits non-zero instead of reporting a successful update.
@@ -212,6 +229,7 @@ Commands:
 | `uninstall-skills [-g] <platform>` | — | Reference-compatible complete uninstall alias |
 | `uninstall-agent <platform>` | — | Reference-compatible complete integration uninstall alias |
 | `serve` | — | Start the MCP stdio server |
+| `doctor` | — | Read-only health check of the install and agent config; exits 1 when it finds errors (usable in CI) |
 | `version` | `--version`, `-v` | Print the package version |
 | `help` | `--help`, `-h` | Print command and option help |
 
@@ -240,27 +258,34 @@ Add to MCP client config:
 }
 ```
 
-Or without global install:
+Or without global install (`-y` keeps npx from waiting on an install prompt the MCP client cannot answer):
 
 ```json
 {
   "mcpServers": {
     "developer-stack-skills": {
       "command": "npx",
-      "args": ["developer-stack-skills", "serve"]
+      "args": ["-y", "developer-stack-skills", "serve"]
     }
   }
 }
 ```
+
+On Windows the installer writes `"command": "cmd", "args": ["/c", "npx", "-y", "developer-stack-skills", "serve"]`, since npm's `.cmd` shims start only through `cmd.exe`. In a source checkout it points at `node <checkout>/bin/developer-stack-skills.js serve`.
 
 Available tools:
 
 | Tool | Description |
 |---|---|
 | `list_available_skills` | List all skills with descriptions and file patterns |
-| `get_skill` | Load full SKILL.md for a skill (`java-spring`, `java-data`, `java-spring-ai`, `java-spring-security`, `python-backend`, `frontend`, `testing`, `loop-engineering`, `project-conventions`, `typescript-5`, `ci-cd`, `test-coverage`, `security-hardening`, `devops`, `graphql`) |
+| `get_skill` | Load the full SKILL.md for any bundled skill |
+| `get_skill_section` | Load one section of a SKILL.md by heading; an unknown heading returns the list of headings |
 | `get_conventions` | Load project-wide conventions (shortcut for `get_skill` with `project-conventions`) |
-| `detect_stack` | Given a file path, return which skill applies and a ready-to-use `get_skill` call |
+| `detect_stack` | Given a file path, return the best-matching skill, other matching skills (`related_skills`), and a ready-to-use `get_skill` call |
+
+The server also exposes every skill as an MCP resource (`skill://<name>`) and the bundled slash commands (`implement-feature`, `write-tests`, `review-pr`, `check-deps`, `add-endpoint`) as MCP prompts, so any MCP client can use them.
+
+`detect_stack` matches the file path against each skill's globs (defined once in `lib/skills.js`, which also drives the Cursor rules and the pre-write hook). The most specific glob wins; test files always resolve to `testing`. Files that match nothing fall back to `project-conventions`.
 
 ---
 
@@ -284,12 +309,14 @@ Two Claude Code hooks fire automatically:
 
 | Hook | File | Fires When |
 |---|---|---|
-| `pre-write` | `hooks/pre-write.js` | Before any file write — injects stack reminder based on file extension |
-| `pre-bash` | `hooks/pre-bash.js` | Before bash commands — warns to verify latest stable version on package installs |
+| `pre-write` | `hooks/pre-write.js` | Before `Write`, `Edit`, or `MultiEdit` — adds a short reminder for the file's skill to Claude's context |
+| `pre-bash` | `hooks/pre-bash.js` | Before Bash commands that add a dependency — reminds Claude to pick the latest stable, non-vulnerable version |
 
-The `pre-write` hook covers: Java, Kotlin, Python, Angular TypeScript, generic TypeScript/JSX, `.env` files, and `.sql` migrations.
+Hooks are registered under `hooks.PreToolUse` in `.claude/settings.json` and return their reminder as `hookSpecificOutput.additionalContext`, which Claude sees (a `systemMessage` would only be shown to the user).
 
-The `pre-bash` hook detects: `pip install`, `uv add`, `npm install`, `yarn add`, `pnpm add`, `bun add`, `poetry add`, and `npx pkg@latest`.
+The `pre-write` hook uses the same detection as `detect_stack` and covers Java/Kotlin (Spring, security, AI), Java data access and Flyway/Liquibase migrations, Python, Angular and React/TypeScript, modern TypeScript/JavaScript, tests, and `.env` files.
+
+The `pre-bash` hook detects dependency additions through `pip install <pkg>`, `uv add`, `uv pip install`, `poetry add`, `npm install <pkg>`, `yarn add`, `pnpm add`, `bun add`, and `npx pkg@version`. Lockfile restores such as a bare `npm install`, `npm ci`, or `pip install -r requirements.txt` are ignored.
 
 ---
 
@@ -311,17 +338,54 @@ With `--install-root`, skill folders and hooks are placed under the exact resolv
 
 Agent configs get created or updated here:
 
-- `Claude`: `CLAUDE.md`
-- `Cursor`: `.cursor/rules/developer-stack-skills.mdc`
+- `Claude`: `CLAUDE.md`, `.claude/skills/<skill>/`, `.claude/settings.json`, `.mcp.json`
+- `Cursor`: `.cursor/rules/developer-stack-skills-<skill>.mdc`
 - `Cline`: `.clinerules`
 - `Roo Code`: `.roo/rules/developer-stack-skills.md`
 - `GitHub Copilot`: `.github/copilot-instructions.md`
 
 Notes:
 
-- `copy` makes project-local copies of skill folders
+- `copy` makes project-local copies of skill folders and writes a `.developer-stack-skills` marker (package and version) into each one
 - `symlink` keeps installed skills linked to package source
 - Running installer again refreshes installed skill folders and rewrites managed config sections
+- `.mcp.json` is shared by Claude Code, Cline, and Roo Code; uninstalling one of them keeps the entry while another still uses it
+
+---
+
+## Upgrading to 4.0
+
+4.0 fixes Claude Code integration pieces that 3.x wrote in formats Claude Code never read. Update the package, then rerun install in each project:
+
+```bash
+npm install -g developer-stack-skills@4
+developer-stack-skills install --dir ./app --yes
+developer-stack-skills doctor --dir ./app
+```
+
+Reinstalling migrates a 3.x project automatically:
+
+| 3.x wrote | 4.0 writes | Why |
+|---|---|---|
+| `.claude/rules/developer-stack-skills-*.md` (all 18 loaded every session) | `.claude/skills/<skill>/` | Native skills load only when a task matches their description |
+| Hooks under top-level `PreToolUse` | Hooks under `hooks.PreToolUse` | Claude Code only reads `hooks` |
+| Hook reminders as `systemMessage` | `hookSpecificOutput.additionalContext` | `systemMessage` is shown to the user, not to Claude |
+| MCP entry in `.claude/mcp.json` | MCP entry in `.mcp.json` | Claude Code reads project MCP servers from the root `.mcp.json` |
+
+Behaviour changes to know about:
+
+- The default agent is now `auto` (agents detected in the project) instead of `all`. Pass `--agent all` to keep writing every format.
+- `detect_stack` now covers all 18 skills. Some paths resolve differently: `*Repository.java` and `*Entity.java` → `java-data`, plain `.js`/`.mjs` → `typescript-5`, `package.json` and Markdown outside `docs/` → `project-conventions` or `documentation`.
+- `npx` runs default to `copy` mode and install into the project.
+- Node.js 22 or later is required (3.x required 24).
+
+Library API changes (only if you call `lib/installer.js` directly):
+
+- `configureClaude(dir, context, useMcp, dryRun)` no longer takes a conventions path.
+- `configureCline`, `configureRoocode`, `configureCopilot`, and `configureInstructionFile` take the install root instead of an array of skill paths.
+- `configureAgents` accepts `packageRoot`, `mode`, `platform`, and `force`; `unconfigureAgents` is newly exported and takes an options object.
+- `configureClaudeRules` and `CONVENTIONS_RULE_CONFIG` are removed; `project-conventions` is a regular entry in `RULE_CONFIGS`.
+- `buildMcpCommand(type, platform, packageRoot)` returns `cmd /c …` on Windows and `npx -y …` for local and npx installs.
 
 ---
 
@@ -377,71 +441,23 @@ Same in both cases:
 
 ---
 
-## Runtime Configuration with Dynamic Installation Paths
+## Health check (`doctor`)
 
-Skills installation paths are now driven by **`agent-roots.json`**, a centralized mapping file that eliminates hardcoded dependencies and makes the system extensible for future agents.
+`developer-stack-skills doctor` inspects an installation without changing anything and names the fix for each problem:
 
-### How It Works
-
-Instead of hardcoding paths for each agent in the installer, the system now:
-
-1. **Reads `agent-roots.json`** — Contains canonical paths for all 50+ supported agent platforms
-2. **Resolves paths dynamically** — The `resolveSkillPath()` function looks up agent root and applies mode (`copy` or `symlink`)
-3. **Validates on startup** — Checks that resolved paths exist before using them
-4. **Logs version mismatches** — Warns if installed skill versions differ from expected
-
-### Agent Path Mapping
-
-The `agent-roots.json` file maps each agent to its canonical skill directory:
-
-```json
-{
-  "agent-roots": {
-    "claude": {
-      "root": ["~", ".claude", "skills"],
-      "description": "Claude AI agent"
-    },
-    "cline": {
-      "root": ["~", ".agents", "skills"],
-      "description": "Cline agent"
-    },
-    "cursor": {
-      "root": ["~", ".cursor", "skills"],
-      "description": "Cursor IDE"
-    }
-  }
-}
+```bash
+developer-stack-skills doctor --dir ./app
+developer-stack-skills doctor --dir ./app --install-root ./shared-skills
 ```
 
-### Using the Path Resolver
+It checks:
 
-**For developers extending the system:**
+- every skill folder in the install root and in `.claude/skills/` exists, is not a broken link, and contains `SKILL.md`
+- copied skills match the package version (from their `.developer-stack-skills` marker)
+- `.claude/settings.json`, `.mcp.json`, and `.cursor/mcp.json` are valid JSON, and the hook and MCP scripts they point to exist
+- leftovers from older releases: hooks under top-level `PreToolUse`, an entry in `.claude/mcp.json`, and `.claude/rules/developer-stack-skills-*.md` files
 
-```javascript
-const { resolveSkillPath, loadAgentRoots, validateSkillPath } = require('lib/resolver.js');
-
-// Load agent roots mapping
-const agentRoots = await loadAgentRoots('./agent-roots.json');
-
-// Resolve path for specific agent
-const path = resolveSkillPath('claude', 'symlink', agentRoots);
-// Returns: /Users/username/.claude/skills
-
-// Validate resolved path exists
-const exists = await validateSkillPath(path);
-```
-
-### Installation Modes
-
-- **`copy` mode** — Creates `.ai-skills` subdirectory at resolved path (for project-local installs)
-- **`symlink` mode** — Uses resolved path directly (for global agent directories)
-
-### Validation & Warnings
-
-The installer now:
-- ✅ Verifies each agent's root directory exists after installation
-- ⚠️ Warns if a required path is missing and suggests reinstalling the agent
-- 📊 Logs version mismatches between required and installed skill versions
+It exits with code 1 when it finds an error, so CI can run it after install.
 
 ---
 

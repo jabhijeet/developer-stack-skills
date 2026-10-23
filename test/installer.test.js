@@ -66,6 +66,20 @@ test("parseArgs defaults to interactive install when no command provided", () =>
   assert.equal(result.command, "install");
 });
 
+test("parseArgs treats leading options as an install", () => {
+  const result = parseArgs(["--dry-run", "--agent", "cursor", "--force"]);
+
+  assert.equal(result.command, "install");
+  assert.equal(result.dryRun, true);
+  assert.equal(result.agent, "cursor");
+  assert.equal(result.force, true);
+});
+
+test("parseArgs keeps --help and --version as commands", () => {
+  assert.equal(parseArgs(["--help"]).command, "--help");
+  assert.equal(parseArgs(["-v"]).command, "-v");
+});
+
 test("parseArgs preserves configure command", () => {
   const result = parseArgs(["configure"]);
 
@@ -158,6 +172,15 @@ test("validateArgs requires one platform for global installation", () => {
     () => validateArgs({ agent: "all", mode: "copy", platform: "linux", global: true }),
     /requires one agent platform/,
   );
+  assert.throws(
+    () => validateArgs({ mode: "copy", platform: "linux", global: true }),
+    /requires one agent platform/,
+    "the auto default also needs an explicit platform",
+  );
+});
+
+test("validateArgs defaults to auto-detected agents", () => {
+  assert.equal(validateArgs({ mode: "copy", platform: "linux" }).agent, "auto");
 });
 
 test("validateArgs rejects invalid agents and modes", () => {
@@ -208,9 +231,28 @@ test("detectPackageInstallType returns source for package checkout", () => {
   assert.equal(result, "source");
 });
 
-test("getDefaultMode prefers copy for local install", () => {
+test("detectPackageInstallType returns npx for the npx cache", () => {
+  const result = detectPackageInstallType(
+    "C:\\Users\\me\\AppData\\Local\\npm-cache\\_npx\\a1b2c3\\node_modules\\developer-stack-skills",
+    "D:\\demo\\app",
+  );
+
+  assert.equal(result, "npx");
+  assert.equal(
+    detectPackageInstallType("/home/me/.npm/_npx/a1b2c3/node_modules/developer-stack-skills", "/work/app"),
+    "npx",
+  );
+});
+
+test("getDefaultMode copies when the package location is not durable", () => {
   assert.equal(getDefaultMode("local"), "copy");
+  assert.equal(getDefaultMode("npx"), "copy", "never link into the purgeable npx cache");
   assert.equal(getDefaultMode("global"), "symlink");
+  assert.equal(getDefaultMode("source"), "symlink");
+});
+
+test("getInstallRoot installs npx runs into the project", () => {
+  assert.equal(getInstallRoot("D:\\demo\\app", "npx"), "D:\\demo\\app\\.ai-skills\\developer-stack-skills");
 });
 
 test("getInstallRoot uses global path for global installs", () => {

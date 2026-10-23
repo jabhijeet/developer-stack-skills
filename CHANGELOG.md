@@ -1,5 +1,68 @@
 # Changelog
 
+## 4.0.0 - 2026-10-23
+
+Breaking:
+
+- Claude Code now receives native skills in `.claude/skills/` instead of `.claude/rules/developer-stack-skills-*.md`; reinstalling removes the old rule files.
+- Default agent target is `auto` (agents detected in the project) instead of `all`.
+- `detect_stack` results changed for some paths: `*Repository`/`*Entity` Java files → `java-data`, plain `.js`/`.mjs`/`.cjs` → `typescript-5`, `package.json` → `project-conventions`, `Dockerfile` → `devops`, `README*` → `documentation`.
+- `configureClaude(dir, context, useMcp, dryRun)` no longer takes a conventions path; `configureCline`, `configureRoocode`, `configureCopilot`, and `configureInstructionFile` take the install root instead of a list of skill paths.
+- `buildMcpCommand` and the generated MCP configs use `npx -y`, `cmd /c` on Windows, and `node <checkout>/bin/…` for source checkouts.
+- Removed `configureClaudeRules` and `CONVENTIONS_RULE_CONFIG` (project-conventions is a regular entry in `RULE_CONFIGS`).
+
+Fixed:
+
+- Claude hooks are written under `hooks.PreToolUse` in `.claude/settings.json`; the top-level `PreToolUse` key used before is ignored by Claude Code, so the hooks never ran. Reinstalling migrates existing entries.
+- Hook reminders are returned as `hookSpecificOutput.additionalContext`, which reaches Claude; `systemMessage` was only shown to the user.
+- The Claude MCP server is registered in `.mcp.json` at the project root, the file Claude Code reads; `.claude/mcp.json` was never loaded. Reinstalling removes the old entry.
+- `.claude/rules/developer-stack-skills-*.md` used Cursor-style `globs`/`alwaysApply` frontmatter that Claude Code ignores, so all 18 rules loaded into every session. Claude now gets native skills instead (see Changed), and reinstalling removes the old rule files.
+- `detect_stack` could never return 8 skills that have file patterns (`typescript-5`, `devops`, `ci-cd`, `graphql`, `test-coverage`, `security-hardening`, `code-review`, `documentation`), and routed Node backend `.js` files and `package.json` to `frontend`. Detection now matches each skill's globs and picks the most specific one.
+- The pre-write SQL reminder recommended `YYYYMMDD_description.sql`, which Flyway does not pick up and which contradicted the `java-data` skill; it now gives Flyway/Liquibase guidance.
+- Over-broad globs: `devops` no longer claims every `.yml`/`.yaml`, `graphql` every `.ts`/`.vue`, `security-hardening` every `*Config.java`.
+- `npx` runs no longer symlink skills and hooks into npm's purgeable cache (new `npx` install type, default `copy`).
+- MCP launch command: `npx -y` so clients without a TTY never hang on the install prompt, a `cmd /c` wrapper on Windows, and `node <checkout>/bin/…` for source checkouts.
+- Instruction files for Cline, Roo Code, Copilot, Gemini, Kiro, Antigravity, and `AGENTS.md` list each skill with its description and tell the agent to read only the matching ones, instead of "read and follow" all 18.
+- `--agent all` writes each config format once instead of rewriting `AGENTS.md` about 50 times.
+- Uninstalling one agent keeps the shared `.mcp.json` entry while Claude, Cline, or Roo Code still uses it.
+- Interactive prompts re-ask on an invalid answer instead of aborting the install.
+- `developer-stack-skills --dry-run` (options without a command) runs an install instead of failing as an unknown command.
+- Platform-global installs (`-g`) no longer put a `hooks` folder among the agent's skills and never overwrite a skill folder the user created.
+- The MCP server reports read errors other than a missing file as `INTERNAL_ERROR` instead of `SKILL_NOT_FOUND`.
+- `package-lock.json` version matches `package.json`.
+- `@modelcontextprotocol/server` raised to `^2.3.1` (2.0.0–2.2.0 carry high-severity advisories GHSA-jm63-cq47-j5jp, GHSA-46jr-4wx8-v453, GHSA-rvq5-wwqv-78pq; they affect the HTTP transport and bearer auth, which this package does not use, but the old range allowed vulnerable versions).
+- Shipped `examples/smoke-tests` match the 4.0 output formats.
+
+Added:
+
+- `doctor` command: read-only health check of skills, hooks, MCP config, version drift, and leftovers from older releases; exits 1 on errors.
+- `auto` agent target (new default): configures the agents detected in the project, or Claude Code plus `AGENTS.md` in an empty project.
+- Native Claude Code skills in `.claude/skills/`, loaded on demand from their descriptions.
+- `--force` to replace skill folders this package did not create.
+- MCP: `get_skill_section` tool, `related_skills` in `detect_stack`, skills as `skill://<name>` resources, and the bundled slash commands as prompts.
+- CI workflow (Node 22 and 24 on Linux, Windows, macOS) and an end-to-end MCP stdio test.
+
+Changed:
+
+- Skill metadata (descriptions, globs, always-on flags) lives in one registry, `lib/skills.js`, used by the installer, the MCP server, and the pre-write hook.
+- Node.js engine requirement lowered to `>=22.0.0` (Node 22 is still a supported LTS).
+- `.claude/rules` is no longer published in the package.
+
+Removed:
+
+- The unused path resolver (`lib/resolver.js`, `agent-roots.json`) and its documentation.
+
+## 3.3.0 - 2026-08-16
+
+Added:
+
+- `documentation` skill — concise READMEs, method comments, docstrings, and inline comments (always-on)
+- `project-review` skill — whole-project health audits (always-on)
+
+Fixed:
+
+- `code-review` is registered in `RULE_CONFIGS`, so it ships an agent rule file on install
+
 ## 3.2.0 - 2026-08-16
 
 Added:

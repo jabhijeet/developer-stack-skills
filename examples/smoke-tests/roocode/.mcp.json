@@ -2,7 +2,7 @@
   "mcpServers": {
     "developer-stack-skills": {
       "command": "npx",
-      "args": ["developer-stack-skills", "serve"],
+      "args": ["-y", "developer-stack-skills", "serve"],
       "type": "stdio"
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "developer-stack-skills",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "description": "AI agent SKILL.md files plus installer CLI for Java/Spring, Python/FastAPI, React/Angular, Testing, Loop Engineering, and Project Conventions. Compatible with Claude, Cline, Roocode, Copilot, and Cursor.",
   "keywords": [
     "ai-agents",
@@ -31,12 +31,12 @@
     "developer-stack-skills": "bin/developer-stack-skills.js"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "postinstall": "node bin/postinstall.js",
     "test": "node --test",
-    "check": "node --check bin/developer-stack-skills.js && node --check bin/postinstall.js && node --check lib/installer.js && node --check lib/mcp-server.js",
+    "check": "node --check bin/developer-stack-skills.js && node --check bin/postinstall.js && node --check lib/installer.js && node --check lib/mcp-server.js && node --check lib/skills.js && node --check lib/doctor.js && node --check hooks/pre-write.js && node --check hooks/pre-bash.js",
     "pack:check": "npm pack --dry-run"
   },
   "os": [
@@ -45,14 +45,13 @@
     "linux"
   ],
   "dependencies": {
-    "@modelcontextprotocol/server": "^2.0.0"
+    "@modelcontextprotocol/server": "^2.3.1"
   },
   "files": [
     "bin/**/*",
     "commands/**/*",
     "hooks/**/*",
     "lib/**/*",
-    ".claude/rules/**/*",
     "java-spring/SKILL.md",
     "java-data/SKILL.md",
     "java-spring-ai/SKILL.md",
@@ -72,7 +71,6 @@
     "documentation/SKILL.md",
     "project-review/SKILL.md",
     "examples/**/*",
-    "agent-roots.json",
     "README.md",
     "RELEASE_NOTES.md",
     "CHANGELOG.md"
