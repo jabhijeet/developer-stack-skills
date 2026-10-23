@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const os = require("node:os");
+const path = require("node:path");
 
 const {
   AGENT_PLATFORMS,
@@ -157,7 +159,7 @@ test("validateArgs normalizes install root override", () => {
     installRoot: "custom-skills",
   });
 
-  assert.equal(result.installRoot, require("node:path").resolve("custom-skills"));
+  assert.equal(result.installRoot, path.resolve("custom-skills"));
 });
 
 test("validateArgs accepts the full platform catalog and aliases", () => {
@@ -204,42 +206,40 @@ test("detectPlatform rejects unsupported platforms", () => {
   assert.throws(() => detectPlatform("aix"), /Unsupported platform.*windows, macos, linux/);
 });
 
+// Paths are built with the platform's own path module so these tests hold on Windows, Linux, and macOS
+const ROOT = path.resolve(os.tmpdir(), "dss-paths");
+const PROJECT = path.join(ROOT, "demo", "app");
+const HOME = path.join(ROOT, "home", "me");
+
 test("detectPackageInstallType returns local for project node_modules path", () => {
-  const result = detectPackageInstallType(
-    "D:\\demo\\app\\node_modules\\developer-stack-skills",
-    "D:\\demo\\app",
-  );
+  const result = detectPackageInstallType(path.join(PROJECT, "node_modules", "developer-stack-skills"), PROJECT);
 
   assert.equal(result, "local");
 });
 
 test("detectPackageInstallType returns global for non-project path", () => {
   const result = detectPackageInstallType(
-    "C:\\Users\\me\\AppData\\Roaming\\npm\\node_modules\\developer-stack-skills",
-    "D:\\demo\\app",
+    path.join(HOME, "AppData", "Roaming", "npm", "node_modules", "developer-stack-skills"),
+    PROJECT,
   );
 
   assert.equal(result, "global");
 });
 
 test("detectPackageInstallType returns source for package checkout", () => {
-  const result = detectPackageInstallType(
-    "D:\\Projects\\developer-stack-skills",
-    "D:\\Projects\\developer-stack-skills",
-  );
+  const checkout = path.join(ROOT, "Projects", "developer-stack-skills");
 
-  assert.equal(result, "source");
+  assert.equal(detectPackageInstallType(checkout, checkout), "source");
 });
 
 test("detectPackageInstallType returns npx for the npx cache", () => {
-  const result = detectPackageInstallType(
-    "C:\\Users\\me\\AppData\\Local\\npm-cache\\_npx\\a1b2c3\\node_modules\\developer-stack-skills",
-    "D:\\demo\\app",
-  );
-
-  assert.equal(result, "npx");
   assert.equal(
-    detectPackageInstallType("/home/me/.npm/_npx/a1b2c3/node_modules/developer-stack-skills", "/work/app"),
+    detectPackageInstallType(path.join(HOME, ".npm", "_npx", "a1b2c3", "node_modules", "developer-stack-skills"), PROJECT),
+    "npx",
+  );
+  // Windows-style cache paths are recognised on every OS (separators are split both ways)
+  assert.equal(
+    detectPackageInstallType("C:\\Users\\me\\AppData\\Local\\npm-cache\\_npx\\a1b2c3\\node_modules\\developer-stack-skills", PROJECT),
     "npx",
   );
 });
@@ -252,38 +252,36 @@ test("getDefaultMode copies when the package location is not durable", () => {
 });
 
 test("getInstallRoot installs npx runs into the project", () => {
-  assert.equal(getInstallRoot("D:\\demo\\app", "npx"), "D:\\demo\\app\\.ai-skills\\developer-stack-skills");
+  assert.equal(getInstallRoot(PROJECT, "npx"), path.join(PROJECT, ".ai-skills", "developer-stack-skills"));
 });
 
 test("getInstallRoot uses global path for global installs", () => {
-  const result = getInstallRoot("D:\\demo\\app", "global");
+  const result = getInstallRoot(PROJECT, "global");
 
-  assert.match(result, /[\\/]\.ai-skills[\\/]developer-stack-skills$/);
-  assert.doesNotMatch(result, /^D:\\demo\\app/);
+  assert.equal(result, path.join(os.homedir(), ".ai-skills", "developer-stack-skills"));
+  assert.ok(!result.startsWith(PROJECT));
 });
 
 test("getPlatformGlobalRoot uses custom and conventional platform paths", () => {
-  assert.equal(getPlatformGlobalRoot("cline", "D:\\Users\\me"), "D:\\Users\\me\\.agents\\skills");
-  assert.equal(getPlatformGlobalRoot("windsurf", "D:\\Users\\me"), "D:\\Users\\me\\.codeium\\windsurf\\skills");
-  assert.equal(getPlatformGlobalRoot("adal", "D:\\Users\\me"), "D:\\Users\\me\\.adal\\skills");
+  assert.equal(getPlatformGlobalRoot("cline", HOME), path.join(HOME, ".agents", "skills"));
+  assert.equal(getPlatformGlobalRoot("windsurf", HOME), path.join(HOME, ".codeium", "windsurf", "skills"));
+  assert.equal(getPlatformGlobalRoot("adal", HOME), path.join(HOME, ".adal", "skills"));
 });
 
 test("getInstallRoot uses the platform path for explicit global installs", () => {
-  const result = getInstallRoot("D:\\demo\\app", "local", null, "gemini", true);
+  const result = getInstallRoot(PROJECT, "local", null, "gemini", true);
 
-  assert.match(result, /[\\/]\.gemini[\\/]skills$/);
+  assert.equal(result, path.join(os.homedir(), ".gemini", "skills"));
 });
 
 test("getInstallRoot accepts an explicit absolute override", () => {
-  const result = getInstallRoot("D:\\demo\\app", "local", "D:\\shared\\skills");
+  const override = path.join(ROOT, "shared", "skills");
 
-  assert.equal(result, "D:\\shared\\skills");
+  assert.equal(getInstallRoot(PROJECT, "local", override), override);
 });
 
 test("getInstallRoot uses project path for local installs", () => {
-  const result = getInstallRoot("D:\\demo\\app", "local");
-
-  assert.equal(result, "D:\\demo\\app\\.ai-skills\\developer-stack-skills");
+  assert.equal(getInstallRoot(PROJECT, "local"), path.join(PROJECT, ".ai-skills", "developer-stack-skills"));
 });
 
 test("parseArgs keeps the legacy agent option compatible", () => {
