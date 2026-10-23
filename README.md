@@ -11,16 +11,41 @@ Upgrading from 3.x? See [Upgrading to 4.0](#upgrading-to-40).
 ## Install
 
 ```bash
-npm install developer-stack-skills
+npm install developer-stack-skills@latest
 ```
 
 Global install:
 
 ```bash
-npm install -g developer-stack-skills
+npm install -g developer-stack-skills@latest
+```
+
+Without installing:
+
+```bash
+npx developer-stack-skills@latest install
 ```
 
 Version in this README: `4.0.0`
+
+### Update to the latest version
+
+Install the latest release, then rerun install so the project's skills, hooks, and agent config are refreshed:
+
+```bash
+# Project install
+npm install developer-stack-skills@latest
+npx developer-stack-skills install --yes
+
+# Global install
+npm install -g developer-stack-skills@latest
+developer-stack-skills install --dir ./app --yes
+
+# Check the result
+developer-stack-skills doctor --dir ./app
+```
+
+`@latest` makes npm fetch the newest published version even when an older one is already installed or cached. `doctor` warns about any copied skill that is still on an older version.
 
 Interactive `npm install` can auto-run post-install configuration, but recent npm versions hide lifecycle script output by default. Treat configuration as explicit step after installation unless you install with `--foreground-scripts`.
 
@@ -31,7 +56,7 @@ Interactive `npm install` can auto-run post-install configuration, but recent np
   Installs skills into `~/.ai-skills/developer-stack-skills`
   Default mode prompt prefers `symlink`
   Post-install configure step: `developer-stack-skills configure`
-- `npx developer-stack-skills install`
+- `npx developer-stack-skills@latest install`
   Installs skills into `<project>/.ai-skills/developer-stack-skills`
   Default mode is `copy`, because npx runs from a cache npm can purge (links into it would break)
 
@@ -93,7 +118,7 @@ developer-stack-skills serve
 Or run from local package without global install:
 
 ```bash
-npx developer-stack-skills configure
+npx developer-stack-skills@latest configure
 npx developer-stack-skills serve
 ```
 

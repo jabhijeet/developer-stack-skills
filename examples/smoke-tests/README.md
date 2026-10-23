@@ -15,7 +15,7 @@ The smoke test passes when the agent:
 
 1. Install package in a clean repo:
    ```bash
-   npm install developer-stack-skills
+   npm install developer-stack-skills@latest
    ```
 2. Copy one fixture config into the test repo
 3. Open the prompt file for that fixture
